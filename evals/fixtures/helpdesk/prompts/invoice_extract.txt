@@ -1,0 +1,3 @@
+Extract from the attached invoice text a JSON object with fields: vendor_name,
+invoice_number, total_amount, currency, due_date, line_items (array of
+{description, quantity, unit_price}). If a field is missing, use null.

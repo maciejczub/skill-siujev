@@ -1,0 +1,93 @@
+{
+  "skill_name": "siujev",
+  "evals": [
+    {
+      "id": 1,
+      "name": "scan-helpdesk-repo",
+      "prompt": "Take a look at the helpdesk service in evals/fixtures/helpdesk. We're evaluating TypeSafe's Jev model. Where in this codebase would it make sense to use it, and where would it be a mistake? Give me a written recommendation I can forward to the team.",
+      "expected_output": "A report listing candidates with verdicts. Team assignment, urgency, refund detection, frustration score, moderation flags, and KB reranking should be identified as candidates (USE / USE WITH GUARDS / PILOT FIRST). SLA breach, days-since-payment, is_overdue, draft_reply, and the invoice extraction as a whole should be called out as non-candidates (arithmetic/date logic, generation, open extraction) with a note that invoice extraction could become verification-by-Jev of an LLM extraction, and the duplicate check could become a Noul per candidate pair. Economics should compare against the incumbent gpt-5-mini calls at the stated volumes, mention the 120k posts/day moderation volume against rate limits, and cite dated facts.",
+      "files": [
+        "evals/fixtures/helpdesk"
+      ],
+      "expectations": [
+        "Identifies frustration_score, moderation needs_review, and assign_team as Jev candidates",
+        "Marks sla_breached, days_since_last_payment, and is_overdue as non-candidates because of date/arithmetic logic",
+        "Marks draft_reply as a non-candidate because it generates text",
+        "Keeps invoice extraction with an LLM and gives Jev a concrete role behind it (per-field verifier Nouls or selection among regex candidates), not a throwaway single 'is this ok' check",
+        "Suggests a reranking step for top_k_articles using one question per candidate, not all candidates packed into one state",
+        "Recommends an explicit none/other option or an existence Noul for the team classification",
+        "Gives a cost estimate for at least one candidate using volumes stated in the code (20k tickets/day, 120k posts/day)",
+        "Compares Jev's cost against a cheap same-tier LLM (e.g. Gemini Flash-Lite, GLM/Qwen/DeepSeek Flash), not only against the incumbent gpt-5-mini or a frontier model",
+        "Flags at least one yellow-signal guard (adversarial forum content, non-English, thresholds, vendor risk) with a mitigation",
+        "Gives each candidate an explicit graded verdict that distinguishes unconditional use from use-with-guards from pilot-first from no (not just 'replace' / 'keep')",
+        "States that quoted prices/limits are dated and names where to re-check them",
+        "Proposes a pilot with real labelled samples before automation for at least one candidate",
+        "Keeps the BANNED word list in code ahead of Jev and proposes per-category thresholds for the moderation flags",
+        "Bounds the reranking design: caps the shortlist size and checks concurrency or rate-limit headroom at 20k tickets/day",
+        "Gives both per-day and per-month cost figures and they are consistent with each other and with the stated tokens, volume and $0.042/M",
+        "Proposes at least two new capabilities that do not exist in the code (e.g. plain-language ticket filters for agents, live frustration meter while an agent types, per-row scoring of the ticket archive, verifying draft_reply against the KB), labelled as new capabilities",
+        "The summary's verdict counts and candidate list match the body (no candidate or proposal missing from the tally, no list duplicated)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "single-decision-polish-classifier",
+      "prompt": "We run a Polish-language e-commerce marketplace. Sellers upload product listings (title + description in Polish) and today a rules engine plus a manual queue decides whether a listing is prohibited (weapons, counterfeit, medicine). ~40k new listings per day, moderators handle ~6k of them manually. A colleague suggests switching the first pass to TypeSafe's Jev. Should we? Be concrete about accuracy, cost, speed, and what we'd have to test before trusting it.",
+      "expected_output": "A verdict of PILOT FIRST (or USE WITH GUARDS conditioned on a pilot), explicitly because the input is Polish and no Polish evaluation exists; a sketch with one Noul per prohibited category plus a severity Score and a review band; a cost estimate for 40k listings/day from measured or assumed token counts; a note about adversarial sellers wording listings to evade detection and Jev not being a security boundary on its own; a comparison with alternatives (fine-tuned multilingual encoder on the existing moderation labels, cheap multilingual LLM); a pilot design with a few hundred labelled listings and probe.py-style metrics.",
+      "files": [],
+      "expectations": [
+        "Verdict is PILOT FIRST or explicitly conditional on a pilot, citing Polish-language uncertainty",
+        "States that TypeSafe documents English as the primary training language with lower accuracy for other languages",
+        "States that no evaluation of Jev on real (non-synthetic) Polish text is known, at most a small synthetic pilot",
+        "Decomposes the judgment into per-category questions (one Noul per prohibited category, optionally plus a Choice with a none/allowed option) rather than a single multi-way Choice or one broad 'is this prohibited' question",
+        "Recommends a review band / thresholds that route uncertain listings to moderators instead of auto-blocking",
+        "Warns that adversarial sellers can steer the model and recommends Jev not be the sole gate",
+        "Provides a cost estimate for ~40k listings/day with stated token assumptions",
+        "Mentions the existing manual-queue labels as training data for a fine-tuned multilingual classifier alternative",
+        "Specifies a pilot: sample size, labels, metrics (agreement, uncertain band share, repeat stability, latency)",
+        "Does not claim Jev is hallucination-free or always correct because outputs are typed",
+        "Keeps the existing rules engine as an independent signal or floor rather than replacing it outright",
+        "Gives a cost table from the skill's script or explicit arithmetic that includes at least one same-tier LLM rival per item, not only Jev's own cost",
+        "States a numeric pass bar for the pilot (e.g. minimum agreement, maximum uncertain-band share, latency)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "cost-comparison-vs-cheap-llm",
+      "prompt": "Quick question: we classify ~300k customer emails a day into 12 intents with DeepSeek in JSON mode, roughly 700 input tokens and 30 output tokens per email, about 1.5-2.5 s latency. Someone says Jev would be 400x cheaper. Is that true for us, and would it be as accurate?",
+      "expected_output": "A grounded answer: the 400x figure is TypeSafe's self-tested peak against frontier models, not against DeepSeek-class pricing; an actual per-day/per-month comparison using DeepSeek's current price and Jev's $0.042/M input with the given token counts (Jev should come out cheaper but by a much smaller multiple, roughly single-digit to low double-digit); accuracy framed as 'same tier as mid-range LLMs, decomposition and an other option matter, pilot on 200 emails'; latency ~100-500 ms vs 1.5-2.5 s; rate-limit check for 300k/day (~3.5 req/s average, peak may approach limits); a note that Choice over 12 intents with an other option and confidence gating is the shape.",
+      "files": [],
+      "expectations": [
+        "Says the 400x claim is vendor-reported and measured against frontier models, not DeepSeek-class pricing",
+        "Computes a per-day or per-month cost for Jev at 300k emails/day that counts the question and option tokens on top of the ~700-token email",
+        "Computes the DeepSeek cost with a stated current price per million tokens (and dates it)",
+        "Reports a realistic cost ratio much lower than 400x",
+        "Addresses accuracy as comparable to a mid-tier LLM with a recommendation to pilot on labelled emails",
+        "Recommends a Choice over the 12 intents with an other/none option and confidence gating",
+        "Checks the workload against the published rate limits (1,200 req/min, 250k tokens/s)",
+        "Notes latency improvement from seconds to sub-second and asks whether it matters for the workflow",
+        "Recommends enabling DeepSeek prompt caching (or low reasoning) as a zero-risk first step, since it shrinks the gap"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "greenfield-product-opportunities",
+      "prompt": "We're building a community platform for board-game players: forum threads, event listings, a marketplace for used games, and a Discord-like live chat. Node/TypeScript backend, Postgres. Where could TypeSafe's Jev add features that would be hard to build otherwise? Give me a shortlist with what each would cost at ~50k chat messages, ~3k forum posts and ~500 listings per day, and which ones you would pilot first.",
+      "expected_output": "An opportunity-driven shortlist (not a replacement audit): e.g. live chat moderation per message with confidence bands, plain-language feed/notification rules users write themselves, event-to-user interest matching, marketplace listing checks (prohibited/scam/mispriced with price math in code), duplicate listing detection per pair, forum thread quality/answered-question scoring stored as columns, semantic search over threads without embeddings, feature extraction for a recommendation model. Each with question sketch, cost from the stated volumes, guards (adversarial chat, non-English), and a pilot order.",
+      "files": [],
+      "expectations": [
+        "Presents proposals as new capabilities organised by what they enable, not as replacements of existing code",
+        "Includes a real-time per-message chat judgment with a review band or confidence gating",
+        "Includes a plain-language rule or personalisation feature where user text goes into the question instructions",
+        "Any duplicate/matching design puts both records in the state and judges one pair per request (not several candidates packed into the question text), and keeps price comparisons in code",
+        "Persists per-item judgments (forum posts or listings) as queryable columns or a decisions table that other features reuse",
+        "Gives a cost estimate per feature from the stated volumes (50k messages, 3k posts, 500 listings per day) using $0.042 per M input tokens",
+        "Checks the 50k messages/day chat load against the published rate limits or notes it is far below them",
+        "Warns that adversarial chat content can steer Jev and that it should not be the only gate",
+        "Recommends a pilot order with a reason for what goes first",
+        "Cites at least one named community example or measured number from the use-case catalog or evidence file",
+        "The shortlist's total cost matches the sum of the per-feature lines"
+      ]
+    }
+  ]
+}

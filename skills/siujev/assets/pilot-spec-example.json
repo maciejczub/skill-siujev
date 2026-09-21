@@ -1,0 +1,569 @@
+{
+ "_comment": "Example spec for scripts/probe.py: 48 synthetic Polish marketplace listings with expected labels; three per-category Nouls and one Choice with an explicit 'allowed' option. Replace samples with real data before trusting any number. Run: python3 scripts/probe.py assets/pilot-spec-example.json --repeats 3 [--openrouter]",
+ "questions": {
+  "weapons": {
+   "type": "noul",
+   "instructions": "Does `listing` offer a real firearm, ammunition, or a weapon whose sale to the general public is prohibited in Poland (e.g. firearms, live ammunition, brass knuckles, switchblades)?",
+   "criteria": {
+    "true": "A real firearm, live ammunition, or a prohibited weapon is offered for sale.",
+    "false": "No such item, or a legal item such as an airsoft/ASG replica, a kitchen or hunting knife, a toy, or sports equipment."
+   }
+  },
+  "counterfeit": {
+   "type": "noul",
+   "instructions": "Does `listing` offer a counterfeit or replica branded product presented as, or imitating, a protected brand?",
+   "criteria": {
+    "true": "A fake, replica, 'inspired by', or 'AAA copy' of a branded product, or an item with clear signals of counterfeiting.",
+    "false": "An original product, a clearly unbranded product, or a legitimate used original."
+   }
+  },
+  "medicine": {
+   "type": "noul",
+   "instructions": "Does `listing` offer a prescription-only medicine, a medicinal product whose retail sale is restricted in Poland, or a product marketed with medical treatment claims that require authorization?",
+   "criteria": {
+    "true": "Prescription drugs, anabolic steroids, antibiotics, hormonal or injectable medicines, or products explicitly sold as treatment for a disease.",
+    "false": "Ordinary cosmetics, dietary supplements sold as supplements, medical devices freely sold (thermometers, bandages), or non-medical items."
+   }
+  },
+  "category": {
+   "type": "choice",
+   "instructions": "Which prohibited category, if any, does `listing` fall into?",
+   "criteria": {
+    "weapons": "Firearms, live ammunition, prohibited weapons.",
+    "counterfeit": "Fake or replica branded goods.",
+    "medicine": "Prescription or restricted medicines, steroids, medical treatment products.",
+    "allowed": "None of the above; an ordinary permitted listing."
+   }
+  }
+ },
+ "samples": [
+  {
+   "state": {
+    "listing": "Pistolet Glock 17 gen 4, 9mm, stan bardzo dobry, sprzedam bez pozwolenia, odbiór osobisty Warszawa."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Amunicja 9x19 Luger, 500 sztuk, oryginalne opakowania, szybka wysyłka kurierem."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Kastet stalowy, masywny, idealny do samoobrony, nowy."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Nóż sprężynowy automatyczny, ostrze wyskakujące, 10 cm, wysyłka dyskretna."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Strzelba Mossberg 500, kaliber 12, sprzedam osobie bez papierów, cena do negocjacji."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Replika ASG Glock 17, napęd CO2, kulki 6 mm, energia poniżej 17 J, stan idealny."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Nóż kuchenny Santoku 18 cm, stal damasceńska, nowy w pudełku."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Łuk sportowy refleksyjny 30 lbs, komplet ze strzałami, dla początkujących."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Pistolet na wodę Nerf Super Soaker, zabawka dla dzieci 6+, używany."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Wiatrówka Hatsan 4,5 mm, energia 16 J, bez pozwolenia, do strzelania rekreacyjnego."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Scyzoryk Victorinox Huntsman, 15 funkcji, oryginał, stan bardzo dobry."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Gaz pieprzowy 50 ml, legalny środek obrony, żel, zasięg 4 m."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Torebka Louis Vuitton Neverfull, replika AAA, jakość 1:1, nie do odróżnienia od oryginału."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Buty Nike Air Jordan 1, kopia premium, nowe, rozmiary 40-45, bez metek."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Zegarek Rolex Submariner, super clone, mechanizm japoński, wygląda jak oryginał, 450 zł."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Perfumy Dior Sauvage 100 ml, odpowiednik w oryginalnym flakonie z logo, zapach identyczny, 60 zł."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Słuchawki AirPods Pro 2, wersja 'inspired by', logo Apple, animacja połączenia działa, 120 zł."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Koszulka polo Ralph Lauren, oryginał kupiony w outlecie, rozmiar L, z metką."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Torebka skórzana handmade, bez logo, wzór inspirowany klasyką, polska pracownia."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Zegarek Casio F-91W, oryginalny, na gwarancji, faktura VAT."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Używane buty Adidas Superstar, rozmiar 42, kupione w sklepie Adidas, paragon do wglądu."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Perfumy lane, odpowiedniki znanych zapachów, własna marka bez logo, 30 ml."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Xanax 1 mg, 30 tabletek, oryginalne, bez recepty, wysyłka w 24h."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Testosteron enanthate 250 mg/ml, 10 ml, do cyklu, dyskretna paczka."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Antybiotyk Amoksiklav 1000 mg, 14 tabletek, zostało po leczeniu, sprzedam tanio."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Ozempic 1 mg pen, 4 wstrzykiwacze, na odchudzanie, bez recepty, przechowywany w lodówce."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Tabletki na potencję Kamagra 100 mg, 20 sztuk, działa jak viagra, dyskretnie."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Witamina D3 4000 IU, suplement diety, 120 kapsułek, termin 2027."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Termometr bezdotykowy na podczerwień, nowy, gwarancja 24 miesiące."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Kreatyna monohydrat 500 g, suplement dla sportowców, nieotwarta."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Plastry z opatrunkiem, zestaw 100 sztuk, apteczka samochodowa."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Ibuprofen 200 mg, 10 tabletek, lek bez recepty, ważny do 2027."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Krem nawilżający do twarzy, 50 ml, dermokosmetyk, nowy."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Rower górski Kross Level 3.0, rama 19 cali, koła 29, stan bardzo dobry."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Laptop Lenovo ThinkPad T14, i5, 16 GB RAM, 512 SSD, faktura, gwarancja."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Fotel biurowy ergonomiczny, regulowane podłokietniki, czarny, mało używany."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Książka 'Wiedźmin. Ostatnie życzenie', wydanie z 2014, stan dobry."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Konsola PlayStation 5 z dwoma padami, oryginalne pudełko, 2 gry gratis."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Sprzedam br0ń palną, k@rabinek AK, pisz na priv po szczegóły, nie zadawaj pytań."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Sterydy na masę, deca + testo, pełny cykl 12 tygodni, pytaj na priv o listę."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Torebka 'LV' monogram, nie oryginał, ale bardzo ładna, ktoś zna się to wie ;)"
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Buty Nike Air Max 90, oryginał, ale mam wątpliwości bo kupione na bazarze, sprzedam tanio."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  },
+  {
+   "state": {
+    "listing": "Sztucer myśliwski Tikka T3x .308, tylko dla posiadaczy pozwolenia, sprzedaż przez rusznikarza z umową."
+   },
+   "expected": {
+    "weapons": true,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "weapons"
+   }
+  },
+  {
+   "state": {
+    "listing": "Mocny lek na kaszel z kodeiną Thiocodin, 3 opakowania, kupione w aptece, sprzedam."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": true,
+    "category": "medicine"
+   }
+  },
+  {
+   "state": {
+    "listing": "Igły do insuliny 100 szt, sterylne, dla diabetyków, nowe opakowanie."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Katana dekoracyjna na stojaku, stal nierdzewna, nieostrzona, do kolekcji."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Maskotka Pikachu, pluszak 30 cm, produkt oficjalny Pokemon Center Japan."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": false,
+    "medicine": false,
+    "category": "allowed"
+   }
+  },
+  {
+   "state": {
+    "listing": "Etui na telefon z logo Gucci, nieoryginalne, ładna imitacja, iPhone 15."
+   },
+   "expected": {
+    "weapons": false,
+    "counterfeit": true,
+    "medicine": false,
+    "category": "counterfeit"
+   }
+  }
+ ]
+}

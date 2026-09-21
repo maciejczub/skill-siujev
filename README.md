@@ -1,2 +1,128 @@
-# skill-siujev
+# siujev — Should I use Jev?
 
+Something unusual happened in the week after 15 September 2026. A model that
+**cannot write a single sentence** became the most talked-about release of
+the year. [Jev](https://typesafe.ai), TypeSafe AI's "System One" model, takes a
+state and typed questions and answers with a choice, a score, or a yes/no
+probability in a few hundred milliseconds for a few thousandths of a cent.
+Within days people had it playing Doom from emulator memory, driving a
+browser agent that books flights for $0.004, pruning Claude Code's context
+without rewriting a byte, judging 1,018 research papers for eight cents,
+filtering a social feed as you scroll, and answering `WHERE jev(people,
+'could work from home')` inside Postgres. Over 1,300 public builds in the
+first week, and the pattern is always the same: **the big model writes, code
+executes, and Jev decides.**
+
+The excitement is justified. So is the scepticism: the vendor's "444x cheaper"
+is a self-tested peak, the accuracy sits at GPT-5.6 Terra level on short
+crisp decisions and well below the frontier on long messy documents, and the
+API was one week old with a waitlist and no SLA. The gap between "this is a
+new primitive" and "this is the right primitive for *my* feature" is exactly
+where projects burn time.
+
+**siujev** closes that gap. It is an [agent skill](https://agentskills.io) for
+Claude Code, Codex, Cursor, and any other coding agent that answers, for
+your codebase or your product idea, one question: *should this decision be
+made by Jev?* And it answers it the way a careful engineer would: with the
+shape of the decision, the documented failure modes, measured latency and
+cost against the models Jev actually competes with, a verdict, and a pilot
+you can run in an afternoon.
+
+## What it does
+
+1. **Finds the decisions.** Two passes over a repo, a design, or a feature
+   request. First the judgments your software already makes badly or
+   expensively: keyword heuristics, regex standing in for meaning, LLM calls
+   whose output is a label, review queues where most items are fine. Then
+   the judgments it does not make at all, because until now a judgment cost
+   seconds and cents: semantic conditions inside ordinary code, a score on
+   every row of a table, checks on every keystroke or chat message, tool and
+   element selection inside an agent, verification of every step another AI
+   takes, rules your users write in plain language. A catalog of what people
+   have built, by capability family and with their numbers, keeps the
+   proposals concrete.
+2. **Checks each one honestly.** Hard blockers (generation, arithmetic, dates,
+   multi-hop reasoning, images, 32k tokens, on-prem), decision shape, the
+   nine failure modes TypeSafe itself documents, and the traps independent
+   audits found: no `none` option, packing items to rank into one state,
+   trusting it as a security boundary.
+3. **Does the arithmetic.** A cost and rate-limit estimator with current
+   prices for the cheap tier Jev competes with on cost (DeepSeek Flash, Qwen,
+   GLM, Gemini Flash-Lite) and the frontier tier it competes with on
+   accuracy (Terra, Sol, Astra, Opus 5, Fable 5.1), including the cascade
+   that gets frontier accuracy at a third of the price.
+4. **Delivers a verdict** per candidate: USE, USE WITH GUARDS, PILOT FIRST,
+   or NO, with a question sketch, thresholds, guards, the best alternative,
+   and a next step. A bundled pilot script runs your own samples through the
+   live API (directly or via OpenRouter) and reports agreement, uncertainty,
+   repeat stability, and latency before you commit.
+
+Every number in the skill carries its source and the date it was checked, and
+the evidence file separates what TypeSafe claims from what others measured,
+including a small Polish-language pilot run for this skill because nobody
+else had measured one.
+
+It complements TypeSafe's own
+[implementation skill](https://github.com/typesafe-ai/skills), which covers
+*how* to build once you have decided.
+
+## Install
+
+Claude Code plugin:
+
+```bash
+claude plugin marketplace add maciejczub/skill-siujev
+claude plugin install siujev@siujev
+```
+
+Other agents via skills.sh:
+
+```bash
+npx skills add maciejczub/skill-siujev --skill siujev
+```
+
+Manual: copy `skills/siujev/` into your agent's skills directory.
+
+## Use
+
+Ask your agent things like:
+
+> Should I use Jev for the ticket triage in `support/triage.py`?
+>
+> Scan this repo and tell me where Jev would replace fragile code or LLM calls, and what it would let us build that we can't today.
+>
+> We're building a marketplace for used board games. What could Jev add, what would it cost at 500 listings a day, and what should we pilot first?
+>
+> We do 300k intent classifications a day with DeepSeek. Someone says Jev is 400x cheaper. Is that true for us, and would it be as accurate?
+
+In Claude Code you can invoke it directly with `/siujev:siujev`.
+
+## What is inside
+
+```
+skills/siujev/
+├── SKILL.md                     workflow: scan → fit check → economics → verdict
+├── references/
+│   ├── jev-facts.md             capabilities, limits, prices, failure modes (dated)
+│   ├── fit-checklist.md         blockers, decision shapes, green/yellow signals, design rules
+│   ├── scan-signals.md          how to find candidates: replacement pass and opportunity pass
+│   ├── use-case-catalog.md      what people build with Jev, by capability family, with numbers
+│   ├── alternatives.md          cheap tier, frontier tier, rerankers, self-hosting: who wins when
+│   └── evidence.md              vendor claims vs independent measurements, incl. a Polish pilot
+├── scripts/
+│   ├── estimate_cost.py         cost, latency and rate-limit estimate vs LLM presets
+│   └── probe.py                 live pilot on your data (TypeSafe API or OpenRouter)
+└── assets/
+    ├── verdict-template.md      report format
+    └── pilot-spec-example.json  ready-to-run probe.py spec (48 Polish listings)
+```
+
+## Keeping it current
+
+Jev shipped on 2026-09-15 and its prices, limits, and failure-mode list change.
+Every reference file carries the date it was checked and the live URL to
+re-check. Pull requests that update numbers with a source are welcome.
+
+## License
+
+MIT.

@@ -33,3 +33,6 @@ logs/
 /tmp/
 /dist/
 /build/
+
+# Local research notes (not part of the published skill)
+/.research/

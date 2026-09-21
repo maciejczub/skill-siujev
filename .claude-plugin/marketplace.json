@@ -1,0 +1,14 @@
+{
+  "name": "siujev",
+  "description": "Agent skill that answers \"Should I use Jev?\" for a piece of software.",
+  "owner": {
+    "name": "Maciej Czub"
+  },
+  "plugins": [
+    {
+      "name": "siujev",
+      "description": "Find where TypeSafe's Jev fits in a codebase or design, then verify each candidate against capabilities, failure modes, latency, cost, and alternatives.",
+      "source": "./"
+    }
+  ]
+}
