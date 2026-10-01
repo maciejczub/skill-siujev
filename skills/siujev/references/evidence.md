@@ -1,6 +1,7 @@
 # Evidence: what is claimed, what is measured, and by whom
 
-Compiled 2026-09-21, six days after Jev's release. Everything below is either
+Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
+(5d) added 2026-10-01. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
 measured it), or **[CUSTOMER]** (a user quoted in press without a public
 method). When you use a number in a verdict, carry its label with it. Most of
@@ -354,10 +355,129 @@ faster and 40–49x cheaper than GPT-5.6 Terra with lower accuracy, not
 193.6x/444.6x; Spanish input cost 3–6 accuracy points). Treat those as
 [CUSTOMER] unless marked measured.
 
-## 6. What nobody has measured yet (as of 2026-09-21)
+## 5d. This skill's own benchmark of decision models vs Jev (2026-10-01) [INDEP]
 
-Sustained-load latency; head-to-head with Llama Guard, Cleanlab, Katanemo
-Arch, Fastino, Voyage rerank, SetFit; Polish or other Slavic languages beyond
-the 48-item pilot above (long text, real seller data, other domains); default
-data retention; long-run price stability. If a verdict depends on one of these,
-it is PILOT FIRST.
+Run by the skill's author through OpenRouter's `/api/alpha/decisions`
+endpoint. Every decision model got the identical request body (state,
+questions, criteria). GPT-6 Luna, as a cheap-LLM reference, got one
+chat-completions call per item with the same questions as a strict JSON
+schema and reasoning set to `none`. Each model ran with 4 concurrent
+workers, all models in parallel, from one client in Poland; latency
+includes OpenRouter overhead. About 13,000 requests in total cost $0.77.
+
+Two kinds of data:
+
+- **Public sets** (seeded samples, n = 200 each): AG News (Choice, 4),
+  Banking77 (Choice, 77), Yelp stars (Score, 5) and BoolQ (Noul), plus the
+  48 Polish listings from 5b, run 3 times each.
+- **Fresh mirrors**, written for this test on 2026-10-01 and deliberately
+  **never published**, so no model can have trained on them (686 items):
+  - news on invented events
+  - customer messages for the 77 Banking77 labels
+  - a new 19-intent telecom taxonomy
+  - reviews of invented businesses
+  - yes/no questions over passages about invented subjects
+  - 84 Polish support tickets: a team Choice plus refund and churn Nouls
+
+  Gemini 3.8 Flash re-labelled every item blind. It disagreed on 2 items, both
+  get_physical_card vs order_physical_card, and those were dropped.
+
+Accuracy, %:
+
+| Model | AG News | Banking77 | Yelp exact | BoolQ | Polish Nouls / Choice | Fresh: news / B77 / telecom 19 / reviews / yes-no / PL team / PL Nouls |
+|---|---|---|---|---|---|---|
+| Jev 1.13 | 88.5 | 80.5 | 67.0 | 89.0 | 97.2 / 85.4 | 100 / 99.3 / 100 / 98 / 100 / 97.6 / 99.4 |
+| Liquid D1 | 89.5 | 87.5 | 66.0 | 90.0 | 96.5 / 87.5 | 100 / 98.7 / 99.3 / 96 / 100 / 100 / 99.4 |
+| Mercury Decide | 91.0 | 86.5 | 66.5 | 91.5 | 98.1 / 89.6 | not run yet (free tier quota) |
+| Tev1 4B | 89.5 | max 20 options | 66.0 | 90.5 | 93.8 / 91.0 | 98 / – / 98 / 91 / 100 / 96.4 / 99.4 |
+| Solar Decide | 89.0 | max 26 options | 61.0 | 85.5 | 94.4 / 86.8 | 100 / – / 98 / 87 / 96 / 94.0 / 94.6 |
+| Kev 4B | 89.5 | 87.0 | 68.5 | 82.0 | 95.1 / 89.6 | 96 / 96.7 / 88.2 / 91 / 96 / 90.5 / 85.7 |
+| Span-01 (Noul only) | – | – | – | 83.0 | 96.5 / – | – / – / – / – / 93 / – / 98.8 |
+| GPT-6 Luna (LLM) | 88.0 | 81.5 | 61.0 | 86.5 | 97.9 / 93.8 | 100 / 100 / 100 / 90 / 99 / 97.6 / 99.4 |
+
+- **How to read the differences.** With n = 200, Wilson intervals are about
+  ±5 points, so most gaps in the table are noise. Paired McNemar tests on
+  the same items found these differences against Jev at p < 0.05:
+  - better than Jev on public Banking77: D1 (17 vs 3 discordant items),
+    Mercury (18 vs 6) and Kev (20 vs 7)
+  - worse than Jev on public BoolQ: Kev
+  - worse than Jev on Yelp and on the fresh reviews: GPT-6 Luna
+  - worse than Jev on the fresh reviews and fresh Polish tickets: Solar
+  - worse than Jev on fresh telecom intents (18 vs 0) and fresh Polish
+    tickets (21 vs 0): Kev
+  - worse than Jev on the fresh yes/no questions: Span-01
+
+  Everything else is a statistical tie.
+- **The contamination check.** D1's and Kev's 7-point lead on public
+  Banking77 did not survive fresh messages with the same 77 labels:
+  - fresh results: Jev 99.3, D1 98.7, Kev 96.7
+  - gain from public to fresh: Jev +18.8 and Luna +18.5, against D1 +11.2 and
+    Kev +9.7
+
+  This is consistent with exposure to Banking77 or its label conventions
+  during training, but it does not prove it. The fresh sets have clean
+  author labels, so every model scored higher on them and the top models hit
+  the ceiling, which compresses gaps. Kev's public strength did not carry
+  over to new text in any fresh task.
+- **Calibration.** Expected calibration error (ECE) of the top answer on
+  AG News, Banking77 and BoolQ:
+
+  | Model | AG News | Banking77 | BoolQ |
+  |---|---|---|---|
+  | Liquid D1 | 0.04 | 0.05 | 0.03 |
+  | Mercury Decide | 0.07 | 0.08 | 0.05 |
+  | Jev 1.13 | 0.08 | 0.09 | 0.04 |
+  | Solar Decide | 0.10 | – | 0.12 |
+
+  - Jev's ECE on the fresh sets is ≤ 0.06.
+  - Kev is strongly underconfident: on fresh telecom intents only 20 % of
+    answers reach 0.8, although all of those are right. Thresholds do not
+    transfer between models; tune them per model.
+- **Latency, p50 / p95** (all requests):
+
+  | Model | p50 | p95 |
+  |---|---|---|
+  | Jev | 341 ms | 458 ms |
+  | Tev1 | 340 ms | 566 ms |
+  | Mercury | 399 ms | 590 ms |
+  | D1 | 424 ms | 992 ms |
+  | Span | 605 ms | 1.2 s |
+  | Kev | 619 ms | 901 ms |
+  | Solar | 720 ms | **12.5 s** |
+  | GPT-6 Luna | 1.2 s | 1.7 s |
+- **Cost per 1,000 decisions** (AG News / Banking77):
+
+  | Model | AG News | Banking77 |
+  |---|---|---|
+  | Mercury | free | free |
+  | Kev | $0.005 | $0.035 |
+  | D1 | $0.005 | $0.019 |
+  | Jev | $0.018 | $0.071 |
+  | Solar | $0.022 | – |
+  | GPT-6 Luna | $0.026 | $0.177 |
+
+  Providers count tokens differently for the same body. For the same AG News
+  request Jev counted 423 input tokens, D1 131, Kev 121 and Solar 440. So
+  compare cost per decision, never price per token.
+
+Read this as one benchmark by one person: the fresh items were written by an
+LLM (Claude) and verified by another (Gemini), which may favour models trained
+on synthetic LLM text; short texts only; one client location; prices as of
+the run date. It is enough to say "pilot D1 next to Jev"; it is not enough to
+switch without your own data.
+
+## 6. What nobody has measured yet (as of 2026-10-01)
+
+- Sustained-load latency.
+- Head-to-head comparisons with Llama Guard, Cleanlab, Katanemo Arch, Fastino,
+  Voyage rerank and SetFit.
+- Polish or other Slavic languages beyond the two small sets above: long
+  text, real seller data, other domains.
+- Default data retention.
+- Long-run price stability.
+- Decision models on long, messy, multi-field documents (5d used short
+  texts only).
+- OpenAI's Decisions API (announced as a preview on 2026-09-29, no public
+  docs).
+
+If a verdict depends on one of these, it is PILOT FIRST.

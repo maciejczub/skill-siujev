@@ -23,6 +23,12 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
   code.
 - Not trained on customer requests. Zero data retention (ZDR) is available for
   enterprise customers; a DPA and privacy policy exist (`/legal`).
+- No longer the only model of its kind. Between 2026-09-25 and 10-01,
+  OpenRouter added six other decision models that take the same request body:
+  Liquid D1, Inception Mercury Decide, Upstage Solar Decide, Together Tev1,
+  Kev 4B and Respan Span-01. OpenAI previewed a Luna-backed "Decisions API"
+  on 2026-09-29, with no public docs yet. Comparison and measurements are in
+  `alternatives.md` §2c.
 
 ## The three primitives (`/primitives`, `/api`)
 

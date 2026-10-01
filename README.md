@@ -50,8 +50,10 @@ you can run in an afternoon.
    prices for the cheap tier Jev competes with on cost (DeepSeek Flash, Qwen,
    GLM, Gemini Flash-Lite, GPT-6 Luna) and the frontier tier it competes
    with on accuracy (GPT-5.6 Terra and Sol, GPT-6 Sol and Astra, Claude
-   Sonnet 5.5, Opus 5.5 and Fable 5.1), including the cascade
-   that gets frontier accuracy at a third of the price.
+   Sonnet 5.5, Opus 5.5 and Fable 5.1), including the cascade that gets
+   frontier accuracy at a third of the price. It also covers the decision
+   models that now take Jev's exact API (Liquid D1, Mercury Decide, Solar
+   Decide, Tev1, Kev 4B), benchmarked head to head against Jev.
 4. **Delivers a verdict** per candidate: USE, USE WITH GUARDS, PILOT FIRST,
    or NO, with a question sketch, thresholds, guards, the best alternative,
    and a next step. A bundled pilot script runs your own samples through the
@@ -61,7 +63,8 @@ you can run in an afternoon.
 Every number in the skill carries its source and the date it was checked, and
 the evidence file separates what TypeSafe claims from what others measured,
 including a small Polish-language pilot run for this skill because nobody
-else had measured one.
+else had measured one, and a seven-model decision-model benchmark with a
+contamination check on fresh, deliberately unpublished test sets.
 
 It complements TypeSafe's own
 [implementation skill](https://github.com/typesafe-ai/skills), which covers

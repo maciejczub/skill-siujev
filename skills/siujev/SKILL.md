@@ -161,6 +161,11 @@ or the bar is frontier accuracy, price the cascade arm too: Jev with a 0.8–0.9
 confidence gate plus the frontier model for the remainder, which has measured
 at 26–37 % of the frontier cost within 1–2 points. Always also compare against
 plain code or an existing trained classifier whenever one could do the job.
+Since late September 2026 Jev also has direct rivals: other decision models
+that take its exact request body (`references/alternatives.md` §2c). In this
+skill's benchmark Liquid D1 tied Jev at about a third of the cost per
+decision. Name the best of them in the verdict and run it as a second arm of
+the pilot.
 
 Copy cost and rate figures from the script's output into the report rather
 than re-deriving them by hand; hand arithmetic on per-day versus per-month
@@ -209,8 +214,10 @@ which reports agreement with labels, the share of answers in the uncertain
 band, repeat flips, p95 latency, and token usage. `assets/pilot-spec-example.json`
 is a complete spec to copy (Polish marketplace listings, three Nouls and a
 Choice with an `allowed` option, expected labels). If the user has no TypeSafe
-key, `--openrouter` runs the same pilot through OpenRouter. Read the wrong
-answers one by one before setting thresholds.
+key, `--openrouter` runs the same pilot through OpenRouter. With
+`--openrouter` the spec's `"model"` can name another decision model (e.g.
+`liquid/d1`), so the same spec pilots a rival. Read the wrong answers one by
+one before setting thresholds.
 
 Before handing the report over, check it against itself: the verdict counts
 in the summary match the sections below, every candidate in the table has a

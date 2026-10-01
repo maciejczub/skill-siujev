@@ -4,7 +4,9 @@
 Standard library only (urllib). Needs TYPESAFE_API_KEY in the environment, or
 OPENROUTER_API_KEY with --openrouter (OpenRouter serves Jev on its own
 POST /api/alpha/decisions endpoint with the same request and response shape;
-model id "typesafe/jev-1.13"; no waitlist).
+model id "typesafe/jev-1.13"; no waitlist). The same OpenRouter endpoint serves
+other decision models with the same request body (e.g. "liquid/d1",
+"inception/mercury-decide:free"); set "model" in the spec to pilot one of them.
 Reads a JSON spec that holds the questions and a list of sample states, sends
 each state (optionally several times), and reports:
 
