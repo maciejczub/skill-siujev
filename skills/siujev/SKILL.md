@@ -247,8 +247,20 @@ sources, the guards, and the next step.
 Be precise about evidence. `references/evidence.md` separates what TypeSafe
 claims from what has been measured independently. When you quote a speed or
 cost multiple, say whose measurement it is. When a verdict rests on accuracy
-in a domain or language nobody has measured, the verdict is PILOT FIRST, and
-the pilot is specified in two steps:
+in a domain or language nobody has measured, the verdict is PILOT FIRST. A
+PILOT FIRST verdict always contains:
+
+- What the vendor says about the input language (English is primary; other
+  languages are handled less well), and which measurements exist. Call
+  synthetic sets synthetic; never present them as real data.
+- How adversarial input could steer the answer, and the independent check
+  that stays in place.
+- The alternative trained on the team's own labels, when they have any.
+- Numeric pass bars written down before the run, for example agreement
+  ≥ 95 % on labelled items, ≤ 15 % in the uncertain band, no repeat flips on
+  clear cases, p95 ≤ 600 ms.
+
+The pilot is specified in two steps:
 
 1. **Smoke test, no labels needed.** Try the question wording on 10–20 real
    items in TypeSafe's Playground (https://console.typesafe.ai/playground) or
