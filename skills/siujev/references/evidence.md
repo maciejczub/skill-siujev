@@ -1,5 +1,17 @@
 # Evidence: what is claimed, what is measured, and by whom
 
+## Contents
+- Labels: [VENDOR], [INDEP], [CUSTOMER]
+- 1. Accuracy: vendor eval, head-to-head with frontier and cheap models
+- 2. Calibration and consistency
+- 3. Latency
+- 4. Cost
+- 5. Operations and access
+- 5b. This skill's own pilot on Polish text (2026-09-21)
+- 5c. Community builds
+- 5d. This skill's own benchmark of decision models vs Jev (2026-10-01)
+- 6. What nobody has measured yet
+
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
 (5d) added 2026-10-01. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
@@ -347,7 +359,7 @@ listings and labels.
 
 ## 5c. Community builds
 
-`use-case-catalog.md` lists what people have built in the first week, by
+The skill's use-case catalog lists what people have built in the first week, by
 capability family, with the builders' own numbers, and a "Where it fell
 short" section (reranking over 33k entries lost to vectors; CSV column typing
 cost 6.6–12.7x an LLM; an independent intent-routing benchmark found 3.6x

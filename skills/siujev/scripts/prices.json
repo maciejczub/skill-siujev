@@ -1,0 +1,58 @@
+{
+  "_comment": "Single source for every price, limit and latency the scripts use. USD per million tokens. 'name' is the row label in references/alternatives.md; tools/check_skill.py verifies that the row quotes these prices. Re-check the sources before quoting; they move monthly.",
+  "checked": "2026-10-01",
+  "jev": {
+    "model": "jev-1.13.0",
+    "price_in": 0.042,
+    "price_out": 0.0,
+    "rate_tokens_per_s": 100000,
+    "rate_requests_per_s": 40,
+    "context_total": 64000,
+    "context_state_plus_longest_question": 32000,
+    "latency_ms_range": [100, 500],
+    "latency_source": "TypeSafe's stated range; independent p50 240-385 ms; this skill's benchmark p50 341 / p95 458 ms (2026-10-01)",
+    "source": "https://docs.typesafe.ai/models.md",
+    "checked": "2026-10-01"
+  },
+  "llm_presets": {
+    "qwen3.7-flash":        {"name": "Qwen3.7 Flash", "tier": "cheap", "in": 0.03, "out": 0.13, "latency_ms": 750, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "nova-micro":           {"name": "Amazon Nova Micro", "tier": "cheap", "in": 0.035, "out": 0.14, "latency_ms": 380, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "gpt-5-nano":           {"name": "GPT-5 nano", "tier": "cheap", "in": 0.05, "out": 0.40, "latency_ms": 1300, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "gpt-6-luna":           {"name": "GPT-6 Luna", "tier": "cheap", "in": 0.10, "out": 0.50, "latency_ms": 1200, "latency_source": "measured: this skill's benchmark, reasoning none, p50 1,197 ms (2026-10-01)", "checked": "2026-10-01"},
+    "gemini-2.5-flash-lite": {"name": "Gemini 2.5 Flash-Lite", "tier": "cheap", "in": 0.10, "out": 0.40, "latency_ms": 400, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "ministral-8b":         {"name": "Ministral 3B / 8B", "tier": "cheap", "in": 0.15, "out": 0.15, "latency_ms": 350, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "qwen3.8-flash":        {"name": "Qwen3.8 Flash", "tier": "cheap", "in": 0.15, "out": 0.47, "latency_ms": 700, "latency_source": "reasoning low, OpenRouter 2026-09-21", "checked": "2026-10-01"},
+    "glm-5.3-flash":        {"name": "GLM-5.3 Flash", "tier": "cheap", "in": 0.15, "out": 0.50, "latency_ms": 900, "latency_source": "reasoning low, OpenRouter 2026-09-21", "checked": "2026-10-01"},
+    "deepseek-v4.1-flash":  {"name": "DeepSeek V4.1 Flash", "tier": "cheap", "in": 0.15, "out": 0.60, "latency_ms": 1700, "latency_source": "DevX report, reasoning low", "checked": "2026-10-01", "note": "off-peak price; peak is 0.30 / 1.20"},
+    "mistral-small-4":      {"name": "Mistral Small 4", "tier": "cheap", "in": 0.15, "out": 0.60, "latency_ms": 420, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "gemini-3.5-flash-lite": {"name": "Gemini 3.1 / 3.5 Flash-Lite", "tier": "cheap", "in": 0.30, "out": 2.50, "latency_ms": 1200, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+    "claude-haiku-4-5":     {"name": "Claude Haiku 4.5", "tier": "cheap", "in": 1.00, "out": 5.00, "latency_ms": 800, "latency_source": "OpenRouter p50 2026-09-21", "checked": "2026-10-01"},
+
+    "gpt-5.6-terra":        {"name": "GPT-5.6 Terra", "tier": "frontier", "in": 2.00, "out": 12.00, "latency_ms": 1500, "latency_source": "2026-09-22 research notes (independent tests ~1.0-1.5 s); not re-measured", "checked": "2026-10-01"},
+    "gpt-6-sol":            {"name": "GPT-6 Sol", "tier": "frontier", "in": 2.00, "out": 10.00, "latency_ms": 1540, "latency_source": "measured 2026-10-01: 10 short classifications, reasoning none, p50 1,536 ms", "checked": "2026-10-01"},
+    "gpt-6.1-sol":          {"name": "GPT-6.1 Sol", "tier": "frontier", "in": 2.00, "out": 10.00, "latency_ms": 2700, "latency_source": "measured 2026-10-01: reasoning low (none is rejected), p50 2,701 ms", "checked": "2026-10-01"},
+    "gpt-6-astra":          {"name": "GPT-6 Astra", "tier": "frontier", "in": 10.00, "out": 50.00, "latency_ms": 4000, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01"},
+    "claude-sonnet-5-5":    {"name": "Claude Sonnet 5.5", "tier": "frontier", "in": 2.00, "out": 10.00, "latency_ms": 1790, "latency_source": "measured 2026-10-01: effort low, p50 1,792 ms", "checked": "2026-10-01"},
+    "claude-opus-5-5":      {"name": "Claude Opus 5.5", "tier": "frontier", "in": 4.00, "out": 20.00, "latency_ms": 3370, "latency_source": "measured 2026-10-01: effort low, p50 3,368 ms, max 13.8 s", "checked": "2026-10-01"},
+    "claude-fable-5-1":     {"name": "Claude Fable 5.1", "tier": "frontier", "in": 10.00, "out": 50.00, "latency_ms": 5000, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01"},
+    "gemini-3.8-flash":     {"name": "Gemini 3.8 Flash", "tier": "frontier", "in": 0.75, "out": 3.75, "latency_ms": 1800, "latency_source": "independent test p50 ~1.5 s (Banking77); not re-measured", "checked": "2026-10-01"},
+    "grok-4.7":             {"name": "Grok 4.7", "tier": "frontier", "in": 2.00, "out": 6.00, "latency_ms": 2730, "latency_source": "measured 2026-10-01: reasoning low, p50 2,728 ms", "checked": "2026-10-01"},
+    "kimi-k3":              {"name": "Kimi K3", "tier": "frontier", "in": 3.00, "out": 15.00, "latency_ms": 1900, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01"},
+    "deepseek-v4-pro":      {"name": "DeepSeek V4 Pro", "tier": "frontier", "in": 0.66, "out": 1.98, "latency_ms": 2400, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01", "note": "off-peak price; peak is 1.32 / 3.96"},
+
+    "gpt-5.6-luna":         {"name": "GPT-5.6 Luna", "tier": "superseded", "superseded_by": "gpt-6-luna", "in": 0.20, "out": 1.20, "latency_ms": 1000, "latency_source": "reasoning low, independent tests", "checked": "2026-10-01"},
+    "gpt-5.6-sol":          {"name": "GPT-5.6 Sol", "tier": "superseded", "superseded_by": "gpt-6-sol", "in": 4.00, "out": 20.00, "latency_ms": 3000, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01", "note": "promotional price, at least through 2026-11-21"},
+    "claude-sonnet-5":      {"name": "Claude Sonnet 5", "tier": "superseded", "superseded_by": "claude-sonnet-5-5", "in": 2.00, "out": 10.00, "latency_ms": 2200, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01"},
+    "claude-opus-5":        {"name": "Claude Opus 5", "tier": "superseded", "superseded_by": "claude-opus-5-5", "in": 5.00, "out": 25.00, "latency_ms": 3300, "latency_source": "independent test ~3.4 s", "checked": "2026-10-01"},
+    "grok-4.6":             {"name": "Grok 4.6", "tier": "superseded", "superseded_by": "grok-4.7", "in": 2.00, "out": 6.00, "latency_ms": 4300, "latency_source": "2026-09-22 research notes; not re-measured", "checked": "2026-10-01"}
+  },
+  "decision_models": {
+    "jev-1.13":        {"name": "Jev 1.13", "openrouter_id": "typesafe/jev-1.13", "in": 0.042, "cost_per_1k_agnews": 0.0178, "p50_ms": 341, "p95_ms": 458},
+    "liquid-d1":       {"name": "Liquid D1", "openrouter_id": "liquid/d1", "in": 0.04, "cost_per_1k_agnews": 0.0052, "p50_ms": 424, "p95_ms": 992},
+    "mercury-decide":  {"name": "Mercury Decide", "openrouter_id": "inception/mercury-decide:free", "in": 0.0, "cost_per_1k_agnews": 0.0, "p50_ms": 399, "p95_ms": 590},
+    "tev1-4b":         {"name": "Tev1 4B experimental", "openrouter_id": "togethercomputer/tev1-4b-experimental", "in": 0.042, "cost_per_1k_agnews": 0.0086, "p50_ms": 340, "p95_ms": 566, "max_choice_options": 20},
+    "solar-decide":    {"name": "Solar Decide", "openrouter_id": "upstage/solar-decide", "in": 0.05, "cost_per_1k_agnews": 0.0220, "p50_ms": 720, "p95_ms": 12495, "max_choice_options": 26},
+    "kev-4b":          {"name": "Kev 4B", "openrouter_id": "jaredpalmer/kev-4b", "in": 0.042, "cost_per_1k_agnews": 0.0051, "p50_ms": 619, "p95_ms": 901},
+    "span-01":         {"name": "Span-01", "openrouter_id": "respan/span-01", "in": 0.02, "cost_per_1k_boolq": 0.0042, "p50_ms": 605, "p95_ms": 1212, "noul_only": true}
+  }
+}

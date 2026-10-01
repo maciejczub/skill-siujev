@@ -17,7 +17,7 @@
         "Suggests a reranking step for top_k_articles using one question per candidate, not all candidates packed into one state",
         "Recommends an explicit none/other option or an existence Noul for the team classification",
         "Gives a cost estimate for at least one candidate using volumes stated in the code (20k tickets/day, 120k posts/day)",
-        "Compares Jev's cost against a cheap same-tier LLM (e.g. Gemini Flash-Lite, GLM/Qwen/DeepSeek Flash), not only against the incumbent gpt-5-mini or a frontier model",
+        "Compares Jev's cost against a cheap-tier LLM (e.g. Gemini Flash-Lite, GLM/Qwen/DeepSeek Flash), not only against the incumbent gpt-5-mini or a frontier model",
         "Flags at least one yellow-signal guard (adversarial forum content, non-English, thresholds, vendor risk) with a mitigation",
         "Gives each candidate an explicit graded verdict that distinguishes unconditional use from use-with-guards from pilot-first from no (not just 'replace' / 'keep')",
         "States that quoted prices/limits are dated and names where to re-check them",
@@ -27,7 +27,8 @@
         "Gives both per-day and per-month cost figures and they are consistent with each other and with the stated tokens, volume and $0.042/M",
         "Proposes at least two new capabilities that do not exist in the code (e.g. plain-language ticket filters for agents, live frustration meter while an agent types, per-row scoring of the ticket archive, verifying draft_reply against the KB), labelled as new capabilities",
         "The summary's verdict counts and candidate list match the body (no candidate or proposal missing from the tally, no list duplicated)"
-      ]
+      ],
+      "should_trigger": true
     },
     {
       "id": 2,
@@ -47,9 +48,10 @@
         "Specifies a pilot: sample size, labels, metrics (agreement, uncertain band share, repeat stability, latency)",
         "Does not claim Jev is hallucination-free or always correct because outputs are typed",
         "Keeps the existing rules engine as an independent signal or floor rather than replacing it outright",
-        "Gives a cost table from the skill's script or explicit arithmetic that includes at least one same-tier LLM rival per item, not only Jev's own cost",
+        "Gives a cost table from the skill's script or explicit arithmetic that includes at least one cheap-tier LLM rival per item, not only Jev's own cost",
         "States a numeric pass bar for the pilot (e.g. minimum agreement, maximum uncertain-band share, latency)"
-      ]
+      ],
+      "should_trigger": true
     },
     {
       "id": 3,
@@ -67,7 +69,8 @@
         "Checks the workload against the published rate limits (40 req/s, 100k tokens/s as of 2026-10-01)",
         "Notes latency improvement from seconds to sub-second and asks whether it matters for the workflow",
         "Recommends enabling DeepSeek prompt caching (or low reasoning) as a zero-risk first step, since it shrinks the gap"
-      ]
+      ],
+      "should_trigger": true
     },
     {
       "id": 4,
@@ -87,6 +90,36 @@
         "Recommends a pilot order with a reason for what goes first",
         "Cites at least one named community example or measured number from the use-case catalog or evidence file",
         "The shortlist's total cost matches the sum of the per-feature lines"
+      ],
+      "should_trigger": true
+    },
+    {
+      "id": 5,
+      "name": "coding-agent-model-question",
+      "should_trigger": true,
+      "prompt": "Everyone says Jev is crazy fast and cheap. Can I set it as the model in Claude Code or Cursor so my coding agent gets faster and cheaper? What would I lose?",
+      "expected_output": "A short answer (quick-question length): no. Jev is a System One decision model that returns typed choices, scores and yes/no probabilities; it does not generate text, call tools or edit files, and TypeSafe's own coding-agents page says no setting turns a coding agent into a Jev-powered one. Redirects: TypeSafe's agent skill to write code that uses Jev; using Jev inside an agent for routing, tool or element choice, verification; the Playground to try it. Jev Router may be mentioned only as an LLM router that uses Jev to pick which LLM answers, not as Jev itself.",
+      "files": [],
+      "expectations": [
+        "Answers no: Jev cannot be the model that drives a coding agent",
+        "Explains why: Jev returns typed answers (choice / score / yes-no probability) and generates no text, tool calls or file edits",
+        "Cites or paraphrases TypeSafe's own position that no model setting makes a coding agent Jev-powered",
+        "Redirects to TypeSafe's agent skill for writing code that uses Jev",
+        "Names at least one legitimate use of Jev inside an agent (routing, tool/element choice, verification, context pruning)",
+        "If Jev Router is mentioned, presents it as an LLM router that uses Jev to pick which LLM answers, not as Jev acting as the agent's model",
+        "Stays within the quick-question ceiling (about 500 words) and does not produce a full verdict report"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "should-not-trigger-summary",
+      "should_trigger": false,
+      "prompt": "Here are 40 support tickets from last week (pasted below). Write a one-page summary of the main complaints for our product manager.",
+      "expected_output": "The siujev skill should not be selected: the task is generative (summarisation) and does not ask about Jev, TypeSafe, classifiers, or replacing a decision.",
+      "files": [],
+      "expectations": [
+        "The siujev skill is not selected or loaded for this request",
+        "If the skill is loaded anyway, the answer does not recommend Jev for writing the summary"
       ]
     }
   ]

@@ -36,3 +36,7 @@ logs/
 
 # Local research notes (not part of the published skill)
 /.research/
+
+# Python bytecode
+__pycache__/
+*.pyc

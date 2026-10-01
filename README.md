@@ -16,7 +16,8 @@ executes, and Jev decides.**
 The excitement is justified. So is the scepticism: the vendor's "444x cheaper"
 is a self-tested peak, the accuracy sits at GPT-5.6 Terra level on short
 crisp decisions and well below the frontier on long messy documents, and the
-API was one week old with a waitlist and no SLA. The gap between "this is a
+API launched on 2026-09-15 behind a waitlist with no SLA. Within two weeks it
+also had rivals that take the same API. The gap between "this is a
 new primitive" and "this is the right primitive for *my* feature" is exactly
 where projects burn time.
 

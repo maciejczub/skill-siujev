@@ -7,6 +7,23 @@ software capability it enables. Sources: yibie/awesome-jev (~190 entries), walid
 (1,305 builds), the r/LLMDevs "I reviewed 287 open-source Jev projects" post, TypeSafe cookbooks. Compiled 2026-09-21.
 All numbers are the builders' own claims unless tagged [measured]; nobody has replicated TypeSafe's 193.6x/444.6x.
 
+## Contents
+- Semantic conditions in ordinary code
+- Judge everything, all the time
+- Real-time loops
+- Agent and harness decisions (incl. Jev Router)
+- Verify every step of another AI
+- Generate with an LLM, judge with Jev
+- Search and retrieval without an index
+- Matching and deduplication
+- Triage that shrinks a human queue (incl. model routers, cascades)
+- Features for classical ML
+- Games, simulations, control
+- Plain-language personalisation
+- Architectural tricks that recur
+- Where it fell short
+- Not shipped yet
+
 ## Semantic conditions in ordinary code
 
 A predicate written in English runs where a regex, SQL WHERE, or `if` would run: no embeddings, no index, no
@@ -101,6 +118,12 @@ rebuilds candidates every step; catalogs > 255 options go hierarchical.
 - json-render (Vercel Labs): Jev picks components and props, code assembles the UI; 3.21 s -> 0.88 s [reddit-287].
 - A chat bot with no LLM (@CodingGarden): Jev chooses tool and arguments [walid]; jev-mcp-dispatcher picks the MCP
   tool and extracts arguments from the sentence; TypeSafe skill-suggestion cookbook: at most one of 182 skills.
+- Jev Router (TypeSafe, `typesafe/jev-router` on OpenRouter, listed 2026-09-25): an off-the-shelf LLM router on
+  the chat-completions endpoint (takes `messages`, `tools`, `reasoning_effort`); Jev picks the model and reasoning
+  effort per request, and the cost is the routed model's, reported in `usage.cost`. As of 2026-10-01 the routed-model
+  list and any quality benchmark were unpublished. It is the one way Jev ends up in an agent's model slot. For "which
+  model answers", compare three arms on your own traffic: Jev Router, a self-built Choice over models with
+  hysteresis (the community model routers under "Triage that shrinks a human queue"), and a fixed model.
 - Context GC: fast-jev-compaction (4,031 stars, most-liked demo at 10,435 likes) keeps/truncates/drops each tool
   call verbatim; jev-pruner trims Bash output before the model sees it; Winnow, yoshi, 25 ports [walid, logicrw].
   jev-use: p50 ~230 ms, ~$0.02 per 1,000 judgments [measured by author, logicrw]. jev-mode: 78 % fewer tokens,

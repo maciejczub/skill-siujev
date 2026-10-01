@@ -1,5 +1,15 @@
 # Fit checklist: is this decision a Jev decision?
 
+## Contents
+- Outcomes (USE, USE WITH GUARDS, PILOT FIRST, NO)
+- 1. Hard blockers
+- 2. Decision shape
+- 3. Green signals
+- 4. Yellow signals (each needs a named guard)
+- 4b. Design rules that decide whether the sketch will work
+- 5. Economics
+- 6. Verification before commitment
+
 Run this per candidate. Work through the sections in order; the first section
 can end the evaluation early. Record the outcome as one of:
 
@@ -15,6 +25,7 @@ can end the evaluation early. Record the outcome as one of:
 | Blocker | Why | What usually works instead |
 |---|---|---|
 | The output must be **generated text, code, a summary, a rewrite, an explanation** | Jev returns only typed values | LLM; or split: LLM generates, Jev verifies/selects |
+| Jev would be **the model that drives a coding agent, chatbot, or other agent** (streaming text, calling tools, editing files) | Not an LLM; TypeSafe's coding-agents page says no setting makes an agent Jev-powered | Keep the LLM; use Jev *inside* the agent for routing, tool or element choice, verification; for "which LLM should answer", Jev Router or a Choice over models |
 | The answer space **cannot be enumerated in advance** and candidates cannot be produced by code (regex, parser, retrieval, an LLM) | A classifier cannot choose an option the application never supplied | LLM extraction; or add a candidate generator, then re-evaluate as "selection" |
 | The judgment needs **arithmetic, counting, magnitude comparison, date ordering or windows** as its core | Documented failure modes 2 and 3 | Do the math in code; use Jev only for the semantic sub-question (e.g. "which month is named?") |
 | The judgment needs **multi-step reasoning, chained inference, double negation, or a property of a property** | "System Two" work; failure mode 4 | LLM with thinking; or decompose into several literal single-hop questions and combine in code |
@@ -58,7 +69,7 @@ out what to do", planning) belong to an LLM or an agent.
 
 | Signal | Guard |
 |---|---|
-| Inputs are mostly **non-English** | Pilot on 100+ real items; compare accuracy against an LLM; keep confidence gates tight. Known data: Korean calibration parity, a German injection corpus at 96.5 %, and this skill's 48-item Polish pilot (Nouls 92–100 %, see `evidence.md` 5b); nothing on long or messy non-English text |
+| Inputs are mostly **non-English** | Pilot on 100+ real items; compare accuracy against an LLM; keep confidence gates tight. Known data: Korean calibration parity, a German injection corpus at 96.5 %, and this skill's two small synthetic Polish sets (Jev: listing Nouls 92–100 %, support-ticket Nouls 99 %, checked 2026-10-01); nothing on long or messy non-English text |
 | **Adversarial** traffic (user-submitted content that may argue for its own label or inject instructions) | Precise criteria; second independent check (LLM or rules); never let Jev be the sole gate for a security decision |
 | Very **long or noisy state** (5k+ tokens with distractors) | Filter/retrieve in code first; or a two-stage pass: Noul relevance filter, then the real question |
 | Options are **subtle or overlapping** | Structured criteria with `what` / `not_for` / `examples`; expect low confidence on boundary cases and route them to review |
@@ -66,8 +77,8 @@ out what to do", planning) belong to an LLM or an agent.
 | **Thresholds drive automatic irreversible actions** | Tune on labeled data; use higher confidence for irreversible actions; pin the model version |
 | **Rate limits**: peak load near 40 req/s or 100k tokens/s (published 2026-10-01; were 1,200 req/min and 250k tokens/s at launch) | Batch questions per request; queue; ask sales for higher limits |
 | The team needs **explanations** for each decision (audit, appeals) | Jev gives none; log the decomposed question answers as the explanation, or add an LLM to explain flagged cases only |
-| **Vendor risk**: a week-old product from a startup, limits "adjusting dynamically" | Wrap calls behind an interface with a fallback; pin versions; plan for outages. Since late September other decision models take the same request body (Liquid D1, Mercury Decide; see `alternatives.md` §2c), so the fallback can be a `model` swap. Pilot it and tune its thresholds separately |
-| **Long candidate lists** to rerank (dozens to hundreds per query) | The 32k ceiling forces one request per candidate, which erases the latency edge; pre-filter in code to ≤ 30, or use a dedicated reranker or a cheap flash LLM (see `alternatives.md`) |
+| **Vendor risk**: a startup product launched 2026-09-15, limits "adjusting dynamically" (already changed once) | Wrap calls behind an interface with a fallback; pin versions; plan for outages. Since late September other decision models take the same request body (Liquid D1, Mercury Decide), so the fallback can be a `model` swap; pilot it and tune its thresholds separately |
+| **Long candidate lists** to rerank (dozens to hundreds per query) | The 32k ceiling forces one request per candidate, which erases the latency edge; pre-filter in code to ≤ 30, or use a dedicated reranker or a cheap-tier LLM |
 | **Long, fuzzy single-shot judgment** (e.g. "is this whole email phishing?") | Jev trailed Haiku 63 % vs 81 % on that; decompose into 4–6 narrow signals and combine in code or with a small regression on labelled data |
 
 ## 4b. Design rules that decide whether the sketch will work
@@ -119,7 +130,10 @@ Run `scripts/estimate_cost.py` with measured token counts. Then ask:
 ## 6. Verification before commitment
 
 A USE verdict on anything user-facing or irreversible should be followed by a
-pilot: 50–200 real items, expected labels for at least half, `scripts/probe.py`
-with `--repeats 3`. Look at agreement, the share of answers in the uncertain
-band, repeat flips, and p95 latency. Read the wrong answers individually. Only
-then set thresholds.
+pilot, in two steps. First a smoke test without labels: 10–20 real items in
+TypeSafe's Playground or a 10-item `scripts/probe.py` run, to fix the question
+wording. Then the pilot: 50–200 real items, expected labels for at least half,
+`scripts/probe.py --validate` to check the spec offline, then
+`scripts/probe.py` with `--repeats 3`. Look at agreement, the share of answers
+in the uncertain band, repeat flips, and p95 latency. Read the wrong answers
+individually. Only then set thresholds, separately for every model piloted.

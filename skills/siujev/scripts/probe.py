@@ -27,10 +27,16 @@ Spec format (JSON):
 }
 
 Usage:
+  python3 probe.py spec.json --validate     # offline check of the spec, no API calls
   python3 probe.py spec.json                # one pass
   python3 probe.py spec.json --repeats 3    # stability check
   python3 probe.py spec.json --json out.json
   OPENROUTER_API_KEY=... python3 probe.py spec.json --openrouter
+
+Every run validates the spec first and stops before the first call if it finds
+an error: unknown question type, too many or too few options or levels, an
+expected label that is not an option, a request over the context budget, or a
+question type the chosen model does not accept.
 
 Keep the pilot honest: use real, recent, messy inputs; include boundary cases and
 some inputs where the right answer is "none of the above"; and look at
@@ -49,6 +55,122 @@ import urllib.request
 
 API_URL = os.environ.get("TYPESAFE_API_URL", "https://api.typesafe.ai/v1/systemone")
 OPENROUTER_URL = "https://openrouter.ai/api/alpha/decisions"
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+# TypeSafe's published limits (docs/primitives, docs/models); per-model limits of
+# rival decision models come from prices.json ("decision_models").
+MAX_CHOICE_OPTIONS = 255
+SCORE_LEVELS = (2, 10)
+CONTEXT_TOTAL = 64_000
+CONTEXT_STATE_PLUS_LONGEST_Q = 32_000
+CONTEXT_OPENROUTER_JEV = 32_000  # OpenRouter serves Jev with a 32k context
+CHARS_PER_TOKEN = 4  # rough English average; JSON structure adds 10-30 %
+
+
+def _rough_tokens(x) -> int:
+    return int(len(x if isinstance(x, str) else json.dumps(x, ensure_ascii=False)) / CHARS_PER_TOKEN) + 1
+
+
+def _options(q):
+    c = q.get("criteria")
+    if isinstance(c, dict):
+        return list(c.keys())
+    if isinstance(c, list):
+        return [o if isinstance(o, str) else json.dumps(o) for o in c]
+    return []
+
+
+def model_limits(model: str) -> dict:
+    """Known per-model limits from prices.json; {} when the model is not listed."""
+    try:
+        dm = json.load(open(os.path.join(HERE, "prices.json"))).get("decision_models", {})
+    except (OSError, ValueError):
+        return {}
+    for v in dm.values():
+        if v.get("openrouter_id") == model or v.get("openrouter_id", "").split(":")[0] == model.split(":")[0]:
+            return v
+    return {}
+
+
+def validate(spec: dict, model: str, openrouter: bool, repeats: int):
+    """Return (errors, warnings, summary lines). Makes no network calls."""
+    errors, warnings = [], []
+    qs, samples = spec.get("questions"), spec.get("samples")
+    if not isinstance(qs, dict) or not qs:
+        errors.append('"questions" must be a non-empty object of {id: question}')
+        qs = {}
+    if not isinstance(samples, list) or not samples:
+        errors.append('"samples" must be a non-empty list of {"state": ..., "expected": {...}}')
+        samples = []
+    lim = model_limits(model)
+    max_opts = min(MAX_CHOICE_OPTIONS, lim.get("max_choice_options", MAX_CHOICE_OPTIONS))
+    for qid, q in qs.items():
+        t = q.get("type")
+        if t not in ("choice", "score", "noul"):
+            errors.append(f'question `{qid}`: type is {t!r}; use "choice", "score" or "noul"')
+            continue
+        if not q.get("instructions"):
+            errors.append(f"question `{qid}`: empty instructions")
+        if lim.get("noul_only") and t != "noul":
+            errors.append(f"question `{qid}`: {model} accepts only Noul questions")
+        if t == "choice":
+            n = len(_options(q))
+            if n < 2:
+                errors.append(f"question `{qid}`: a Choice needs at least 2 options in `criteria`; found {n}")
+            elif n > max_opts:
+                who = model if max_opts < MAX_CHOICE_OPTIONS else "Jev"
+                errors.append(f"question `{qid}`: {n} options; {who} accepts at most {max_opts}. Split it hierarchically or use another model")
+            elif n > 240:
+                warnings.append(f"question `{qid}`: {n} options; about 240 are reported reliable")
+            if not any(o.lower() in ("none", "other", "allowed", "not_stated", "unknown", "none_of_the_above") for o in _options(q)):
+                warnings.append(f"question `{qid}`: no none/other option; a Choice always ranks something first")
+        if t == "score":
+            n = len(q.get("criteria") or [])
+            if not SCORE_LEVELS[0] <= n <= SCORE_LEVELS[1]:
+                errors.append(f"question `{qid}`: a Score needs {SCORE_LEVELS[0]}-{SCORE_LEVELS[1]} levels in `criteria`; found {n}")
+    q_tokens = {qid: _rough_tokens(q) for qid, q in qs.items()}
+    longest_q = max(q_tokens.values(), default=0)
+    req_tokens, labelled = [], 0
+    for i, smp in enumerate(samples):
+        if "state" not in smp:
+            errors.append(f"sample {i}: missing \"state\"")
+            continue
+        st = smp["state"]
+        if lim.get("noul_only") and not isinstance(st, str):
+            errors.append(f"sample {i}: {model} needs the state as a string (or a conversation object)")
+        st_tok = _rough_tokens(st)
+        total = st_tok + sum(q_tokens.values())
+        req_tokens.append(total)
+        if st_tok + longest_q > CONTEXT_STATE_PLUS_LONGEST_Q:
+            errors.append(f"sample {i}: state + longest question ~{st_tok + longest_q:,} tokens; the limit is {CONTEXT_STATE_PLUS_LONGEST_Q:,}. Filter or chunk the state")
+        ctx = CONTEXT_OPENROUTER_JEV if (openrouter and model.startswith("typesafe/")) else CONTEXT_TOTAL
+        if total > ctx:
+            errors.append(f"sample {i}: request ~{total:,} tokens; the limit is {ctx:,}. Split questions or filter the state")
+        elif st_tok > 8_000:
+            warnings.append(f"sample {i}: state ~{st_tok:,} tokens; accuracy falls with irrelevant detail, filter first")
+        exp = smp.get("expected") or {}
+        if exp:
+            labelled += 1
+        for qid, v in exp.items():
+            if qid not in qs:
+                errors.append(f"sample {i}: expected label for unknown question `{qid}`; questions: {', '.join(qs)}")
+                continue
+            t = qs[qid].get("type")
+            if t == "choice" and v not in _options(qs[qid]):
+                errors.append(f"sample {i}: expected {v!r} for `{qid}` is not an option; options: {', '.join(_options(qs[qid]))}")
+            elif t == "noul" and not isinstance(v, bool):
+                errors.append(f"sample {i}: expected value for Noul `{qid}` must be true or false, got {v!r}")
+            elif t == "score" and not (isinstance(v, int) and 0 <= v < len(qs[qid].get("criteria") or [])):
+                errors.append(f"sample {i}: expected value for Score `{qid}` must be a level index 0-{len(qs[qid].get('criteria') or []) - 1}, got {v!r}")
+    if samples and labelled < len(samples) / 2:
+        warnings.append(f"only {labelled}/{len(samples)} samples have expected labels; label at least half")
+    price = lim.get("in", 0.042)
+    n_req = len(samples) * repeats
+    mean_tok = statistics.mean(req_tokens) if req_tokens else 0
+    summary = [f"model {model}: {len(qs)} questions, {len(samples)} samples x {repeats} repeats = {n_req} requests",
+               f"~{mean_tok:,.0f} tokens per request (rough, 4 chars/token); projected cost ~${n_req * mean_tok * price / 1e6:.4f} at ${price}/M input "
+               "(providers count tokens differently; the billed cost is reported after the run)"]
+    return errors, warnings, summary
 
 
 def call(api_key: str, model: str, state, questions: dict, timeout: float, url: str = API_URL) -> tuple[dict, float]:
@@ -89,7 +211,28 @@ def main(argv=None) -> int:
     p.add_argument("--json", help="write full results to this file")
     p.add_argument("--noul-threshold", type=float, default=0.5)
     p.add_argument("--openrouter", action="store_true", help="call Jev through OpenRouter (OPENROUTER_API_KEY) instead of TypeSafe directly")
+    p.add_argument("--validate", action="store_true", help="check the spec offline and print the projected cost; make no API calls")
     a = p.parse_args(argv)
+
+    try:
+        spec = json.load(open(a.spec))
+    except (OSError, ValueError) as e:
+        print(f"cannot read spec {a.spec}: {e}", file=sys.stderr)
+        return 2
+    model = spec.get("model", "typesafe/jev-1.13" if a.openrouter else "jev-latest")
+    errors, warnings, summary = validate(spec, model, a.openrouter, a.repeats)
+    for line in summary:
+        print(line, file=sys.stderr)
+    for w in warnings:
+        print(f"warning: {w}", file=sys.stderr)
+    for e in errors:
+        print(f"error: {e}", file=sys.stderr)
+    if errors:
+        print(f"spec has {len(errors)} error(s); fix them before spending on API calls", file=sys.stderr)
+        return 1
+    if a.validate:
+        print("spec OK" + (f" ({len(warnings)} warning(s))" if warnings else ""))
+        return 0
 
     if a.openrouter:
         api_key = os.environ.get("OPENROUTER_API_KEY")
@@ -103,8 +246,6 @@ def main(argv=None) -> int:
         if not api_key:
             print("TYPESAFE_API_KEY is not set. Create a key at https://console.typesafe.ai/keys, or use --openrouter.", file=sys.stderr)
             return 2
-    spec = json.load(open(a.spec))
-    model = spec.get("model", "typesafe/jev-1.13" if a.openrouter else "jev-latest")
     questions = spec["questions"]
     samples = spec["samples"]
 

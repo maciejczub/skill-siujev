@@ -4,8 +4,10 @@ Date: <YYYY-MM-DD>. Facts checked against docs.typesafe.ai on <date>.
 
 ## Summary
 
-<Two or three sentences: how many candidates were found, how many are USE /
-USE WITH GUARDS / PILOT FIRST / NO, and the single most valuable one.>
+<Two or three sentences: how many candidates and proposals were found, the
+verdict counts written as numbers over candidates and proposals together
+(e.g. "2 USE, 1 USE WITH GUARDS, 1 PILOT FIRST, 3 NO"), and the single most
+valuable one.>
 
 ## Candidates
 
@@ -23,11 +25,11 @@ USE WITH GUARDS / PILOT FIRST / NO, and the single most valuable one.>
 
 **Sketch.** <state fields; questions as `id: type — instructions — options/levels`; how code combines answers; thresholds and where uncertain cases go>
 
-**Economics.** <table or two lines from estimate_cost.py: tokens per request, cost per item / month for Jev vs incumbent, latency per item>
+**Economics.** <table or two lines from estimate_cost.py: tokens per request, cost per item / month for Jev vs incumbent and the best rival decision model, latency per item>
 
 **Risks and guards.** <bullets: each yellow signal with its guard>
 
-**Alternative if not Jev.** <the best other option and when it would win>
+**Alternative if not Jev.** <the best other option, including a rival decision model, and when it would win>
 
 **Next step.** <pilot spec: number of items, labels, probe.py flags; or "implement with the official TypeSafe skill">
 
@@ -44,7 +46,11 @@ line on **what the user gets** that they cannot get now.
 
 **What the user gets.** <one sentence>
 
-**Decision.** ... **Verdict.** ... **Sketch.** ... **Economics.** ... **Guards.** ... **Next step.** ...
+**Decision.** ...
+
+**Verdict: USE / USE WITH GUARDS / PILOT FIRST / NO.**
+
+**Sketch.** ... **Economics.** ... **Guards.** ... **Next step.** ...
 
 ## Not candidates (and why)
 
@@ -53,3 +59,6 @@ line on **what the user gets** that they cannot get now.
 ## Assumptions
 
 - <volumes, token counts, latency of the incumbent, prices used and their check date>
+- <the estimate_cost.py commands behind every cost figure>
+
+<!-- Before handing over: python3 scripts/check_report.py report.md --kind scan|single|quick -->

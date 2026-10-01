@@ -1,5 +1,14 @@
 # Scan signals: finding Jev candidates in a codebase or design
 
+## Contents
+- The two passes
+- Replacement pass: what a candidate looks like
+- Grep-able patterns
+- Opportunity pass: capabilities that become practical (family table)
+- Design documents and issue trackers
+- Writing up a candidate (one-line format)
+- What not to list
+
 Use this when the ask is "where could Jev fit?" rather than "is this one
 decision a fit?". The goal of the scan is a short list of decision points, each
 described in one line with its decision shape, before any fit check.
@@ -59,9 +68,8 @@ Search the code, config, and prompts for:
 
 Walk through the software's loops, streams, tables, queues, and user-facing
 controls and ask, for each family below, "would a cheap calibrated judgment
-here change what the product can do?" `references/use-case-catalog.md` has
-named examples with numbers for every family; use it to make the proposal
-concrete.
+here change what the product can do?" Make each proposal concrete with a
+named example and its numbers from the use-case catalog (SKILL.md, Step 1).
 
 | Family | Trigger question to ask about the software | Typical shape |
 |---|---|---|

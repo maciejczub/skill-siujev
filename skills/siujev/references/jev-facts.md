@@ -1,5 +1,15 @@
 # Jev fact sheet (jev-1.13, verified 2026-09-21; limits and access re-checked 2026-10-01)
 
+## Contents
+- What it is (and the rival decision models)
+- The three primitives: Choice, Score, Noul
+- Limits, price, throughput, access
+- Known failure modes (nine, from TypeSafe's jaggedness page)
+- Design doctrine TypeSafe expects you to follow
+- Where TypeSafe says it fits
+- Jev and coding agents; Jev Router
+- Official agent skill
+
 Everything here comes from docs.typesafe.ai unless marked otherwise. Numbers change:
 before quoting a price, limit, or latency in a recommendation, re-check the live
 page named in each section (Markdown versions exist at the same path with `.md`
@@ -27,8 +37,7 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
   OpenRouter added six other decision models that take the same request body:
   Liquid D1, Inception Mercury Decide, Upstage Solar Decide, Together Tev1,
   Kev 4B and Respan Span-01. OpenAI previewed a Luna-backed "Decisions API"
-  on 2026-09-29, with no public docs yet. Comparison and measurements are in
-  `alternatives.md` §2c.
+  on 2026-09-29, with no public docs yet.
 
 ## The three primitives (`/primitives`, `/api`)
 

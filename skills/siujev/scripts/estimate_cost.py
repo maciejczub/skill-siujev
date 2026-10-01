@@ -2,10 +2,10 @@
 """Estimate the cost and latency of a Jev (TypeSafe System One) workload and
 compare it with doing the same judgment through an LLM.
 
-Standard library only. Prices are defaults you can override; they were checked
-on 2026-09-21 and re-checked on 2026-10-01 (Jev: https://docs.typesafe.ai/models.md;
-LLM presets: vendor pricing pages and OpenRouter). Re-check before quoting them
-to anyone. Run with --list-presets to see the built-in LLM price presets.
+Standard library only. Prices, limits and preset latencies are read from
+prices.json in this directory (dated, with a source for each latency); override
+any of them on the command line. Re-check before quoting them to anyone. Run
+with --list-presets to see the built-in LLM price presets by tier.
 
 Examples
 --------
@@ -13,7 +13,7 @@ Examples
   python3 estimate_cost.py --items-per-day 50000 --state-tokens 600 \
       --questions 6 --tokens-per-question 40
 
-  # Same, comparing against a same-tier LLM prompt of 900 input / 60 output tokens
+  # Same, comparing against a cheap-tier LLM prompt of 900 input / 60 output tokens
   python3 estimate_cost.py --items-per-day 50000 --state-tokens 600 \
       --questions 6 --llm-input-tokens 900 --llm-output-tokens 60 \
       --llm-name deepseek-v4.1-flash
@@ -33,60 +33,47 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
-JEV_PRICE_PER_MTOK = 0.042  # USD per million input tokens; output is free
-# Published per-account limits on 2026-10-01 (were 250k tokens/s and 1,200 req/min
-# at launch); TypeSafe says they adjust dynamically.
-JEV_RATE_TOKENS_PER_S = 100_000
-JEV_RATE_REQUESTS_PER_S = 40
-JEV_RATE_REQUESTS_PER_MIN = JEV_RATE_REQUESTS_PER_S * 60
-JEV_CONTEXT_TOTAL = 64_000
-JEV_CONTEXT_STATE_PLUS_LONGEST_Q = 32_000
-JEV_LATENCY_RANGE_MS = (100, 500)  # TypeSafe's stated range; measure your own
+# Every price, limit and latency comes from prices.json next to this script, the
+# single dated source the references cite. Edit numbers there, not here.
+PRICES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prices.json")
+try:
+    PRICES = json.load(open(PRICES_PATH))
+except (OSError, ValueError) as e:
+    sys.exit(f"cannot read {PRICES_PATH}: {e}. Restore it from the skill repository.")
 
-# Reference LLM prices (USD per million tokens, input / output) and a typical
-# latency in ms for a short classification prompt. Checked 2026-09-21/22 and
-# re-checked 2026-10-01 on vendor pages and OpenRouter; these move monthly. For
-# cost, compare against the flash tier (Jev's accuracy band on short bounded
-# decisions). For the accuracy ceiling, or when the incumbent is a frontier
-# model, use the frontier presets. Latency for reasoning-default models assumes
-# reasoning set to its lowest level. Models released after 2026-09-21 have no
-# latency measurement yet: their value is the predecessor's, marked "assumed";
-# pass --llm-latency-ms with your own measurement.
-LLM_PRESETS = {
-    # cheap / flash tier (Jev's accuracy band)
-    "qwen3.7-flash": (0.03, 0.13, 750),
-    "qwen3.8-flash": (0.15, 0.47, 700),
-    "glm-5.3-flash": (0.15, 0.50, 900),
-    "deepseek-v4.1-flash": (0.15, 0.60, 1700),   # off-peak; peak is 0.30 / 1.20
-    "gemini-2.5-flash-lite": (0.10, 0.40, 400),
-    "gemini-3.5-flash-lite": (0.30, 2.50, 1200),
-    "gpt-5-nano": (0.05, 0.40, 1300),
-    "gpt-5.6-luna": (0.20, 1.20, 1000),
-    "gpt-6-luna": (0.10, 0.50, 1000),            # released 2026-09-22; latency assumed
-    "ministral-8b": (0.15, 0.15, 350),
-    "mistral-small-4": (0.15, 0.60, 420),
-    "nova-micro": (0.035, 0.14, 380),
-    "claude-haiku-4-5": (1.00, 5.00, 800),
-    # frontier tier: use to show the accuracy ceiling's price, or when the
-    # incumbent is one of these
-    "gpt-5.6-terra": (2.00, 12.00, 1500),
-    "gpt-5.6-sol": (4.00, 20.00, 3000),          # promo price, at least to 2026-11-21
-    "gpt-6-sol": (2.00, 10.00, 3000),            # released 2026-09-22; latency assumed
-    "gpt-6.1-sol": (2.00, 10.00, 3000),          # released 2026-09-29; latency assumed
-    "gpt-6-astra": (10.00, 50.00, 4000),
-    "claude-sonnet-5-5": (2.00, 10.00, 2200),    # released 2026-09-28; latency assumed
-    "claude-sonnet-5": (2.00, 10.00, 2200),
-    "claude-opus-5-5": (4.00, 20.00, 3300),      # released 2026-09-22; latency assumed
-    "claude-opus-5": (5.00, 25.00, 3300),
-    "claude-fable-5-1": (10.00, 50.00, 5000),
-    "gemini-3.8-flash": (0.75, 3.75, 1800),
-    "grok-4.7": (2.00, 6.00, 4300),              # released 2026-09-21; latency assumed
-    "grok-4.6": (2.00, 6.00, 4300),
-    "kimi-k3": (3.00, 15.00, 1900),
-    "deepseek-v4-pro": (0.66, 1.98, 2400),   # off-peak; peak is 1.32 / 3.96
-}
+_J = PRICES["jev"]
+JEV_PRICE_PER_MTOK = _J["price_in"]  # USD per million input tokens; output is free
+JEV_RATE_TOKENS_PER_S = _J["rate_tokens_per_s"]  # changed after launch; TypeSafe says limits adjust dynamically
+JEV_RATE_REQUESTS_PER_S = _J["rate_requests_per_s"]
+JEV_RATE_REQUESTS_PER_MIN = JEV_RATE_REQUESTS_PER_S * 60
+JEV_CONTEXT_TOTAL = _J["context_total"]
+JEV_CONTEXT_STATE_PLUS_LONGEST_Q = _J["context_state_plus_longest_question"]
+JEV_LATENCY_RANGE_MS = tuple(_J["latency_ms_range"])  # TypeSafe's stated range; measure your own
+PRICES_CHECKED = PRICES["checked"]
+
+# LLM presets: (USD/M input, USD/M output, typical latency in ms for a short
+# classification prompt at the lowest reasoning setting). Tiers: "cheap" is the
+# cost rival on short bounded decisions; "frontier" shows the accuracy ceiling's
+# price; "superseded" models are kept because published measurements used them.
+LLM_PRESETS = {k: (v["in"], v["out"], v["latency_ms"]) for k, v in PRICES["llm_presets"].items()}
+
+# Defaults, and why:
+# - 40 tokens per question: a Jev request bills the state once plus ~30-50 tokens
+#   per question with one-line criteria (alternatives reference, section 2).
+# - 60 LLM output tokens: a JSON object with one label is 12-30 tokens with
+#   reasoning off (measured on GPT-6 Luna, 2026-10-01); 60 leaves room for a
+#   confidence field or a few reasoning tokens. Pass your measured value.
+# - 1,500 ms LLM latency when no preset matches: the middle of the 0.4-2.9 s
+#   range measured for cheap-tier models at their lowest reasoning setting.
+# - Peak multiplier 3: an assumption that business-hours traffic puts about 3x
+#   the daily average rate into the peak hour. Replace it with your own peak.
+DEFAULT_TOKENS_PER_QUESTION = 40
+DEFAULT_LLM_OUTPUT_TOKENS = 60
+DEFAULT_LLM_LATENCY_MS = 1500.0
+DEFAULT_PEAK_MULTIPLIER = 3.0
 
 
 def fmt_usd(x: float) -> str:
@@ -104,24 +91,29 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--items-per-day", type=float, required=True, help="number of states (documents, tickets, rows) evaluated per day")
     p.add_argument("--state-tokens", type=float, required=True, help="average tokens of state per request")
     p.add_argument("--questions", type=int, default=1, help="questions per request (default 1)")
-    p.add_argument("--tokens-per-question", type=float, default=40, help="average tokens per question incl. criteria (default 40)")
+    p.add_argument("--tokens-per-question", type=float, default=DEFAULT_TOKENS_PER_QUESTION, help=f"average tokens per question incl. criteria (default {DEFAULT_TOKENS_PER_QUESTION})")
     p.add_argument("--requests-per-item", type=float, default=1.0, help="Jev requests per item, e.g. 2 for a two-stage cascade (default 1)")
     p.add_argument("--jev-price", type=float, default=JEV_PRICE_PER_MTOK, help=f"USD per Mtok input (default {JEV_PRICE_PER_MTOK})")
-    p.add_argument("--peak-multiplier", type=float, default=3.0, help="peak-hour rate = average rate x this (default 3)")
+    p.add_argument("--peak-multiplier", type=float, default=DEFAULT_PEAK_MULTIPLIER, help=f"peak-hour rate = average rate x this (default {DEFAULT_PEAK_MULTIPLIER:g}, an assumption; use your own)")
     p.add_argument("--llm-name", default=None, help="label for the LLM comparison, or a preset key: " + ", ".join(LLM_PRESETS))
     p.add_argument("--llm-input-tokens", type=float, default=None, help="LLM input tokens per item (prompt + content)")
-    p.add_argument("--llm-output-tokens", type=float, default=60, help="LLM output tokens per item (default 60 for a JSON label)")
+    p.add_argument("--llm-output-tokens", type=float, default=DEFAULT_LLM_OUTPUT_TOKENS, help=f"LLM output tokens per item (default {DEFAULT_LLM_OUTPUT_TOKENS} for a JSON label)")
     p.add_argument("--llm-input-price", type=float, default=None, help="USD per Mtok input for the LLM")
     p.add_argument("--llm-output-price", type=float, default=None, help="USD per Mtok output for the LLM")
-    p.add_argument("--llm-latency-ms", type=float, default=None, help="assumed LLM latency per item in ms (default: preset value, else 1500)")
+    p.add_argument("--llm-latency-ms", type=float, default=None, help=f"assumed LLM latency per item in ms (default: preset value, else {DEFAULT_LLM_LATENCY_MS:g})")
     p.add_argument("--json", action="store_true", help="print machine-readable JSON instead of a report")
     p.add_argument("--list-presets", action="store_true", help="print the built-in LLM price presets and exit")
     if argv is None:
         argv = sys.argv[1:]
     if "--list-presets" in argv:
-        print("preset                  $/M in   $/M out   latency ms (prices re-checked 2026-10-01)")
-        for k, (i, o, l) in LLM_PRESETS.items():
-            print(f"{k:<22}  {i:>6.3f}   {o:>7.2f}   {l:>6}")
+        print(f"LLM presets from {os.path.basename(PRICES_PATH)} (checked {PRICES_CHECKED}); $/M tokens")
+        for tier in ("cheap", "frontier", "superseded"):
+            print(f"\n{tier} tier" + (" (kept because published measurements used them)" if tier == "superseded" else ""))
+            print("preset                  $/M in   $/M out   latency ms   latency source")
+            for k, v in PRICES["llm_presets"].items():
+                if v["tier"] == tier:
+                    extra = f"  -> {v['superseded_by']}" if v.get("superseded_by") else ""
+                    print(f"{k:<22}  {v['in']:>6.3f}   {v['out']:>7.2f}   {v['latency_ms']:>8}   {v['latency_source']}{extra}")
         return 0
     a = p.parse_args(argv)
 
@@ -177,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
             if llm_latency is None:
                 llm_latency = LLM_PRESETS[a.llm_name][2]
         if llm_latency is None:
-            llm_latency = 1500.0
+            llm_latency = DEFAULT_LLM_LATENCY_MS
         if in_price is None or out_price is None:
             p.error("--llm-input-price and --llm-output-price are required unless --llm-name is a preset")
         llm_cost_item = (a.llm_input_tokens * in_price + a.llm_output_tokens * out_price) / 1e6
@@ -216,14 +208,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  cost per day            {fmt_usd(llm['cost_per_day_usd']):>12}")
         print(f"  cost per month (30d)    {fmt_usd(llm['cost_per_month_usd']):>12}")
         print(f"  LLM / Jev cost ratio    {llm['cost_ratio_llm_over_jev']:>12.1f}x")
-        print(f"  latency per item        {llm_latency:>9,.0f} ms  (assumed)")
+        lat_note = "preset; source in --list-presets" if (a.llm_name in LLM_PRESETS and a.llm_latency_ms is None) else ("given" if a.llm_latency_ms is not None else "assumed default")
+        print(f"  latency per item        {llm_latency:>9,.0f} ms  ({lat_note})")
     if warnings:
         print()
         print("Warnings")
         for w in warnings:
             print(f"  - {w}")
     print()
-    print("Prices and limits checked 2026-10-01; re-check https://docs.typesafe.ai/models.md before quoting.")
+    print(f"Prices and limits from prices.json, checked {PRICES_CHECKED}; re-check {_J['source']} before quoting.")
     return 0
 
 
