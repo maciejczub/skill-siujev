@@ -64,7 +64,7 @@ out what to do", planning) belong to an LLM or an agent.
 | Options are **subtle or overlapping** | Structured criteria with `what` / `not_for` / `examples`; expect low confidence on boundary cases and route them to review |
 | The judgment **depends on world knowledge** rather than the state | Put the reference material in the state; do not rely on model weights |
 | **Thresholds drive automatic irreversible actions** | Tune on labeled data; use higher confidence for irreversible actions; pin the model version |
-| **Rate limits**: peak load near 1,200 req/min or 250k tokens/s | Batch questions per request; queue; ask sales for higher limits |
+| **Rate limits**: peak load near 40 req/s or 100k tokens/s (published 2026-10-01; were 1,200 req/min and 250k tokens/s at launch) | Batch questions per request; queue; ask sales for higher limits |
 | The team needs **explanations** for each decision (audit, appeals) | Jev gives none; log the decomposed question answers as the explanation, or add an LLM to explain flagged cases only |
 | **Vendor risk**: a week-old product from a startup, limits "adjusting dynamically" | Wrap calls behind an interface with a fallback (rules or LLM); pin versions; plan for outages |
 | **Long candidate lists** to rerank (dozens to hundreds per query) | The 32k ceiling forces one request per candidate, which erases the latency edge; pre-filter in code to ≤ 30, or use a dedicated reranker or a cheap flash LLM (see `alternatives.md`) |

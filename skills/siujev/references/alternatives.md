@@ -2,11 +2,17 @@
 
 Compare Jev against two tiers, for two different reasons. For **cost**, the
 honest rival is the cheap "flash" tier (GLM-5.3-Flash, Qwen3.8-Flash, DeepSeek
-V4.1 Flash, Gemini Flash-Lite, GPT-5.6 Luna at low reasoning, Claude Haiku
-4.5): on short bounded decisions Jev's accuracy sits in that band or above it,
-and its cost advantage there is 3–15x per decision, not the vendor's 400x. For
-the **accuracy ceiling**, show the frontier tier (GPT-5.6 Terra / Sol, GPT-6
-Astra, Claude Sonnet 5 / Opus 5 / Fable 5.1, Gemini 3.8 Flash): on short crisp
+V4.1 Flash, Gemini Flash-Lite, GPT-6 Luna or GPT-5.6 Luna at low reasoning,
+Claude Haiku 4.5): on short bounded decisions Jev's accuracy sits in that band
+or above it, and its cost advantage there is 3–15x per decision, not the
+vendor's 400x. For the **accuracy ceiling**, show the frontier tier (GPT-5.6
+Terra / Sol, GPT-6 Sol / 6.1 Sol / Astra, Claude Sonnet 5.5 / Opus 5.5 / Fable
+5.1, Gemini 3.8 Flash). The measured comparisons below were run on the models
+current in mid-September (Terra, Sonnet 5, Opus 5, Sol, Astra, Fable 5.1);
+their successors released 2026-09-22 to 09-29 (GPT-6 Luna, GPT-6 Sol, GPT-6.1
+Sol, Claude Opus 5.5, Claude Sonnet 5.5, Grok 4.7) appear in no comparison
+cited in `evidence.md`, so quote the gap measured against the predecessor
+and plan as if it is at least as large. On short crisp
 tasks Jev ties Terra and Sonnet 5 (−2 to +1 points; it beat Terra 89 vs 88 on
 100k AG News rows), trails Terra by 5–7 points on 77-way overlapping intents,
 and trails Sol / Opus 5 / Astra / Fable 5.1 by 6–12 points on long, fuzzy,
@@ -15,9 +21,12 @@ confidence-gated cascade (Jev first, frontier model for the uncertain 20–37 %)
 lands within 1–2 points of the frontier model at 26–37 % of its cost. The
 table in `evidence.md` has every comparison with its n and source. Also
 compare against a self-hosted encoder and against plain code. Prices below were checked
-2026-09-21 on vendor pages and OpenRouter; they move monthly, so re-check the
-source before quoting. "OR p50" is OpenRouter's median latency over a 30-minute
-window on that day, a rough indicator only.
+2026-09-21 and re-checked 2026-10-01 on vendor pages and OpenRouter; they move
+monthly, so re-check the source before quoting. "OR p50" is OpenRouter's median
+latency over a 30-minute window on 2026-09-21, a rough indicator only; models
+added on 2026-10-01 have no latency figure yet. OpenAI's pricing page lists
+service tiers: Batch and Flex at 50 % of the standard price, Fast at 2x, and
+Ultrafast at 6x (GPT-6 Astra only); the tables show standard prices.
 
 ## 1. The option ladder
 
@@ -32,7 +41,7 @@ Work down this ladder and stop at the first rung that meets the bar.
 | **Frontier LLM** | Multi-step reasoning, generation, or the extra accuracy pays for itself (invoice-type extraction: vendor eval 79 % vs Jev 62 %) | $1–10/M in, $5–50/M out | 2–40 s |
 | **Human** | Stakes or ambiguity exceed any model; use Jev to shrink the queue, not to empty it | $ per item | minutes to days |
 
-## 2. Cheap LLMs in Jev's tier (prices per million tokens, 2026-09-21)
+## 2. Cheap LLMs in Jev's tier (prices per million tokens, checked 2026-09-21, re-checked 2026-10-01)
 
 | Model | $/M in | $/M out | OR p50 latency | Notes |
 |---|---|---|---|---|
@@ -42,12 +51,13 @@ Work down this ladder and stop at the first rung that meets the bar.
 | Qwen3-30B-A3B (open, cheapest host) | 0.048 | 0.19 | ~1.1 s | Self-host candidate |
 | GPT-5 nano | 0.05 | 0.40 | 1.3 s | Reasoning on by default |
 | DeepSeek V4 Flash (legacy, 3rd-party hosts) | 0.055 | 0.11 | 1.6 s | First-party API retired |
+| GPT-6 Luna (OpenAI, released 2026-09-22) | 0.10 | 0.50 | not measured yet | Cheaper than GPT-5.6 Luna (0.20 / 1.20); OpenRouter's description names classification among its target workloads; Flex 0.05 / 0.25. No Jev comparison yet, so include it in a pilot when OpenAI is an option |
 | Gemini 2.5 Flash-Lite | 0.10 | 0.40 | 386 ms | Highest-volume cheap model on OpenRouter; native JSON schema |
 | Ministral 3B / 8B | 0.10 / 0.15 | 0.10 / 0.15 | 304 / 346 ms | Latency peers of Jev; Mistral also sells a Classifier API (8B) at 0.04 / 0.04 |
 | ByteDance Seed 2.0-mini | 0.10 | 0.40 | 371 ms | Fastest Chinese model measured |
 | Qwen3.8 Flash | 0.15 | 0.47 | 5.0 s default, ~0.7 s with reasoning low | DevX ticket routing 90 % |
 | GLM-5.3 Flash (Z.ai) | 0.15 (0.075 on DeepInfra) | 0.50 | 3.2 s default, ~0.9 s low | DevX 94–95 %, best of the sub-$0.20 tier on the AA index |
-| DeepSeek V4.1 Flash (first-party) | 0.15 off-peak / 0.30 peak | 0.60 / 1.20 | 2.9 s default, ~1.7 s low | DevX 97 % (statistical tie with Jev at n=100); cache hits ~0.003 |
+| DeepSeek V4.1 Flash (first-party) | 0.15 off-peak / 0.30 peak | 0.60 / 1.20 | 2.9 s default, ~1.7 s low | DevX 97 % (statistical tie with Jev at n=100); cache hits ~0.003. Some of the ~30 third-party hosts on OpenRouter charge as little as 0.03 / 0.50, on par with Jev's input price; check the host's quantisation and latency before treating that as the rival price |
 | Mistral Small 4 | 0.15 | 0.60 | 416 ms | Measurably worse than Jev in two tests (79–86 %) |
 | StepFun 3.7 Flash | 0.16–0.20 | 0.92–1.15 | 362 ms | Fast |
 | GPT-5.6 Luna | 0.20 | 1.20 | 15 s default, ~1 s low | JevBench 97.1 % vs Jev 96.3 %; strongest of the cheap tier |
@@ -73,23 +83,32 @@ Per-decision arithmetic that matters more than the per-token price:
   a similar cost and Jev lost its latency edge (6.8 s per question for 100
   calls). Rerank short lists, or pre-filter in code.
 
-## 2b. Frontier tier (prices per million tokens, checked 2026-09-22)
+## 2b. Frontier tier (prices per million tokens, checked 2026-09-22, re-checked 2026-10-01)
 
 | Model | $/M in | $/M cached in | $/M out | Where Jev stands |
 |---|---|---|---|---|
 | GPT-5.6 Terra (OpenAI) | 2.00 | 0.20 | 12.00 | tie on short crisp tasks; −5–7 on 77-way intents |
-| GPT-5.6 Sol (OpenAI, promo to 2026-11-21) | 4.00 | 0.40 | 20.00 | −6 overall on vendor workflows, −17 on invoices |
+| GPT-5.6 Sol (OpenAI, promo "at least through 2026-11-21") | 4.00 | 0.40 | 20.00 | −6 overall on vendor workflows, −17 on invoices |
+| GPT-6 Sol (OpenAI, released 2026-09-22) | 2.00 | 0.20 | 10.00 | no published comparison; successor tier to 5.6 Sol at half its price |
+| GPT-6.1 Sol (OpenAI, released 2026-09-29) | 2.00 | 0.10 | 10.00 | no published comparison |
 | GPT-6 Astra (OpenAI) | 10.00 | 1.00 | 50.00 | −6.5 on a 200-item mixed set |
-| Claude Sonnet 5 | 2.00 | 0.20 | 10.00 | tie on vendor workflows and claim-support; −4 on synthetic tickets (n=100, noise) |
-| Claude Opus 5 | 5.00 | 0.50 | 25.00 | −5 on vendor workflows; +2 on fuzzy commit messages (n=800) |
+| Claude Sonnet 5.5 (released 2026-09-28) | 2.00 | 0.20 | 10.00 | no published comparison; same price as Sonnet 5 |
+| Claude Sonnet 5 (still served) | 2.00 | 0.20 | 10.00 | tie on vendor workflows and claim-support; −4 on synthetic tickets (n=100, noise) |
+| Claude Opus 5.5 (released 2026-09-22) | 4.00 | 0.20 | 20.00 | no published comparison; 20 % cheaper than Opus 5 |
+| Claude Opus 5 (still served) | 5.00 | 0.50 | 25.00 | −5 on vendor workflows; +2 on fuzzy commit messages (n=800) |
 | Claude Fable 5.1 | 10.00 | 0.25 | 50.00 | −11.5 on a 200-item mixed set; 6/7 vs 7/7 writing defects |
 | Gemini 3.8 Flash (Google; doubles 2027-01-01) | 0.75 | 0.075 | 3.75 | −1 to −4 on PubMedQA, Banking77, Portuguese legal fields |
+| Grok 4.7 (xAI, released 2026-09-21) | 2.00 | 0.50 | 6.00 | no published comparison; same price as Grok 4.6 |
 | Grok 4.6 (xAI) | 2.00 | 0.50 | 6.00 | tie on synthetic tickets (n=100) |
 | Kimi K3 (Moonshot) | 3.00 | 0.30 | 15.00 | −2 on a 200-item mixed set (n.s.) |
 | DeepSeek V4 Pro (off-peak / peak) | 0.66 / 1.32 | 0.022 / 0.044 | 1.98 / 3.96 | no published comparison |
 
-Gemini 3.8 Pro was not listed by Google or OpenRouter on that date; the Pro
-tier available was Gemini 3.1 Pro Preview at 2.00 / 0.20 / 12.00.
+Gemini 3.8 Pro was not listed by Google or OpenRouter on 2026-09-22, nor on
+OpenRouter on 2026-10-01; the Pro tier available was Gemini 3.1 Pro Preview at
+2.00 / 0.20 / 12.00.
+OpenRouter's OpenAI endpoint for GPT-5.6 Sol showed 2.00 / 10.00 on
+2026-10-01 while OpenAI's own page still said 4.00 / 20.00; quote OpenAI's
+price for first-party use.
 
 ## 3. Rerankers and classification services
 
@@ -139,6 +158,11 @@ them and adds a probability per item; a reranker wins when lists are long
   revisit Jev when labels drift or new categories appear.
 - **Few labels, semantic judgment, sub-second, probabilities used** → Jev, then
   pilot.
+- **"Use Jev as the model behind our coding agent or chatbot"** → no; Jev
+  generates nothing, and TypeSafe's `/introduction/coding-agents` page says
+  so. If the
+  real question is which LLM each request should go to, that is routing:
+  price Jev Router or a self-built Choice over models against a fixed model.
 - **Judgment needs a little generation or long messy inputs** → cheap LLM
   with structured output at low reasoning; consider Jev as a pre-filter or
   verifier in front of it.

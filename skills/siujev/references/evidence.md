@@ -284,7 +284,9 @@ thresholds, the review queue for uncertain cases, and the fallback path.
 - Free credit: one secondary source claims $5 on signup; two others say none
   published. Unverified.
 - **No SLA**. Status page shows 99.854 % over 90 days before launch and a
-  demand-driven outage on launch day. Rate limits "adjusting dynamically".
+  demand-driven outage on launch day. Rate limits "adjusting dynamically",
+  and they did: 250k tokens/s and 1,200 req/min at launch, 100k tokens/s and
+  40 req/s on 2026-10-01 [VENDOR, docs/models].
 - Hosted in the US, multi-region; **no EU data-residency option found**. Not
   trained on customer data; ZDR for enterprise only; default retention window
   for ordinary accounts not stated. No on-prem, no open weights, no paper.

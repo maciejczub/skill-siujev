@@ -151,7 +151,7 @@ context budget or the load exceeds the rate limits. `--list-presets` shows the
 built-in LLM prices in two tiers. Use both, for different questions. For
 **cost**, the honest rival is a cheap model in Jev's accuracy band on short
 decisions (DeepSeek V4.1 Flash, Qwen 3.7/3.8 Flash, GLM-5.3 Flash, Gemini
-Flash-Lite, GPT-5 nano / 5.6 Luna, Haiku 4.5), where independent tests put the
+Flash-Lite, GPT-5 nano / 5.6 Luna / 6 Luna, Haiku 4.5), where independent tests put the
 gap at roughly 3–15x per decision, not the vendor's 400x. For the **accuracy
 ceiling**, name where Jev stands against the frontier tier for this task type
 (`evidence.md` has the table: ties with Terra / Sonnet 5 on short crisp tasks,

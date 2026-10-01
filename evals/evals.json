@@ -64,7 +64,7 @@
         "Reports a realistic cost ratio much lower than 400x",
         "Addresses accuracy as comparable to a mid-tier LLM with a recommendation to pilot on labelled emails",
         "Recommends a Choice over the 12 intents with an other/none option and confidence gating",
-        "Checks the workload against the published rate limits (1,200 req/min, 250k tokens/s)",
+        "Checks the workload against the published rate limits (40 req/s, 100k tokens/s as of 2026-10-01)",
         "Notes latency improvement from seconds to sub-second and asks whether it matters for the workflow",
         "Recommends enabling DeepSeek prompt caching (or low reasoning) as a zero-risk first step, since it shrinks the gap"
       ]

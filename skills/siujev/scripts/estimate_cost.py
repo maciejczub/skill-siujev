@@ -3,9 +3,9 @@
 compare it with doing the same judgment through an LLM.
 
 Standard library only. Prices are defaults you can override; they were checked
-on 2026-09-21 (Jev: https://docs.typesafe.ai/models.md; LLM presets: vendor
-pricing pages and OpenRouter). Re-check before quoting them to anyone. Run with
---list-presets to see the built-in LLM price presets.
+on 2026-09-21 and re-checked on 2026-10-01 (Jev: https://docs.typesafe.ai/models.md;
+LLM presets: vendor pricing pages and OpenRouter). Re-check before quoting them
+to anyone. Run with --list-presets to see the built-in LLM price presets.
 
 Examples
 --------
@@ -36,18 +36,24 @@ import json
 import sys
 
 JEV_PRICE_PER_MTOK = 0.042  # USD per million input tokens; output is free
-JEV_RATE_TOKENS_PER_S = 250_000
-JEV_RATE_REQUESTS_PER_MIN = 1_200
+# Published per-account limits on 2026-10-01 (were 250k tokens/s and 1,200 req/min
+# at launch); TypeSafe says they adjust dynamically.
+JEV_RATE_TOKENS_PER_S = 100_000
+JEV_RATE_REQUESTS_PER_S = 40
+JEV_RATE_REQUESTS_PER_MIN = JEV_RATE_REQUESTS_PER_S * 60
 JEV_CONTEXT_TOTAL = 64_000
 JEV_CONTEXT_STATE_PLUS_LONGEST_Q = 32_000
 JEV_LATENCY_RANGE_MS = (100, 500)  # TypeSafe's stated range; measure your own
 
 # Reference LLM prices (USD per million tokens, input / output) and a typical
-# latency in ms for a short classification prompt. Checked 2026-09-21/22 on
-# vendor pages and OpenRouter; these move monthly. For cost, compare against the
-# flash tier (Jev's accuracy band on short bounded decisions). For the accuracy
-# ceiling, or when the incumbent is a frontier model, use the frontier presets.
-# Latency for reasoning-default models assumes reasoning set to its lowest level.
+# latency in ms for a short classification prompt. Checked 2026-09-21/22 and
+# re-checked 2026-10-01 on vendor pages and OpenRouter; these move monthly. For
+# cost, compare against the flash tier (Jev's accuracy band on short bounded
+# decisions). For the accuracy ceiling, or when the incumbent is a frontier
+# model, use the frontier presets. Latency for reasoning-default models assumes
+# reasoning set to its lowest level. Models released after 2026-09-21 have no
+# latency measurement yet: their value is the predecessor's, marked "assumed";
+# pass --llm-latency-ms with your own measurement.
 LLM_PRESETS = {
     # cheap / flash tier (Jev's accuracy band)
     "qwen3.7-flash": (0.03, 0.13, 750),
@@ -58,19 +64,25 @@ LLM_PRESETS = {
     "gemini-3.5-flash-lite": (0.30, 2.50, 1200),
     "gpt-5-nano": (0.05, 0.40, 1300),
     "gpt-5.6-luna": (0.20, 1.20, 1000),
+    "gpt-6-luna": (0.10, 0.50, 1000),            # released 2026-09-22; latency assumed
     "ministral-8b": (0.15, 0.15, 350),
     "mistral-small-4": (0.15, 0.60, 420),
     "nova-micro": (0.035, 0.14, 380),
     "claude-haiku-4-5": (1.00, 5.00, 800),
-    # frontier tier (checked 2026-09-22): use to show the accuracy ceiling's price,
-    # or when the incumbent is one of these
+    # frontier tier: use to show the accuracy ceiling's price, or when the
+    # incumbent is one of these
     "gpt-5.6-terra": (2.00, 12.00, 1500),
-    "gpt-5.6-sol": (4.00, 20.00, 3000),
+    "gpt-5.6-sol": (4.00, 20.00, 3000),          # promo price, at least to 2026-11-21
+    "gpt-6-sol": (2.00, 10.00, 3000),            # released 2026-09-22; latency assumed
+    "gpt-6.1-sol": (2.00, 10.00, 3000),          # released 2026-09-29; latency assumed
     "gpt-6-astra": (10.00, 50.00, 4000),
+    "claude-sonnet-5-5": (2.00, 10.00, 2200),    # released 2026-09-28; latency assumed
     "claude-sonnet-5": (2.00, 10.00, 2200),
+    "claude-opus-5-5": (4.00, 20.00, 3300),      # released 2026-09-22; latency assumed
     "claude-opus-5": (5.00, 25.00, 3300),
     "claude-fable-5-1": (10.00, 50.00, 5000),
     "gemini-3.8-flash": (0.75, 3.75, 1800),
+    "grok-4.7": (2.00, 6.00, 4300),              # released 2026-09-21; latency assumed
     "grok-4.6": (2.00, 6.00, 4300),
     "kimi-k3": (3.00, 15.00, 1900),
     "deepseek-v4-pro": (0.66, 1.98, 2400),   # off-peak; peak is 1.32 / 3.96
@@ -107,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
     if "--list-presets" in argv:
-        print("preset                  $/M in   $/M out   latency ms (checked 2026-09-21)")
+        print("preset                  $/M in   $/M out   latency ms (prices re-checked 2026-10-01)")
         for k, (i, o, l) in LLM_PRESETS.items():
             print(f"{k:<22}  {i:>6.3f}   {o:>7.2f}   {l:>6}")
         return 0
@@ -132,8 +144,8 @@ def main(argv: list[str] | None = None) -> int:
         warnings.append(f"state + longest question is over {JEV_CONTEXT_STATE_PLUS_LONGEST_Q:,} tokens. Chunk or filter the state in code.")
     if a.state_tokens > 8_000:
         warnings.append("state over ~8k tokens: TypeSafe warns accuracy falls with irrelevant detail (context rot). Filter first.")
-    if peak_rpm > JEV_RATE_REQUESTS_PER_MIN:
-        warnings.append(f"peak ~{peak_rpm:,.0f} req/min exceeds the published {JEV_RATE_REQUESTS_PER_MIN:,} req/min limit; batch more questions per request, queue, or ask for a higher limit.")
+    if peak_rps > JEV_RATE_REQUESTS_PER_S:
+        warnings.append(f"peak ~{peak_rps:,.1f} req/s exceeds the published {JEV_RATE_REQUESTS_PER_S:,} req/s limit; batch more questions per request, queue, or ask for a higher limit.")
     if peak_tps > JEV_RATE_TOKENS_PER_S:
         warnings.append(f"peak ~{peak_tps:,.0f} tokens/s exceeds the published {JEV_RATE_TOKENS_PER_S:,} tokens/s limit.")
 
@@ -192,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  cost per item           {fmt_usd(cost_per_item):>12}")
     print(f"  cost per day            {fmt_usd(cost_per_day):>12}")
     print(f"  cost per month (30d)    {fmt_usd(cost_per_day * 30):>12}")
-    print(f"  avg / peak req per s    {avg_rps:>7.2f} / {peak_rps:.2f}   (peak x{a.peak_multiplier:g})")
+    print(f"  avg / peak req per s    {avg_rps:>7.2f} / {peak_rps:.2f}   (peak x{a.peak_multiplier:g}; limit {JEV_RATE_REQUESTS_PER_S:,})")
     print(f"  peak tokens per s       {peak_tps:>12,.0f}  (limit {JEV_RATE_TOKENS_PER_S:,})")
     print(f"  peak requests per min   {peak_rpm:>12,.0f}  (limit {JEV_RATE_REQUESTS_PER_MIN:,})")
     lo, hi = j["serial_latency_ms_range_per_item"]
@@ -211,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
         for w in warnings:
             print(f"  - {w}")
     print()
-    print("Prices and limits checked 2026-09-21; re-check https://docs.typesafe.ai/models.md before quoting.")
+    print("Prices and limits checked 2026-10-01; re-check https://docs.typesafe.ai/models.md before quoting.")
     return 0
 
 

@@ -1,4 +1,4 @@
-# Jev fact sheet (jev-1.13, verified 2026-09-21)
+# Jev fact sheet (jev-1.13, verified 2026-09-21; limits and access re-checked 2026-10-01)
 
 Everything here comes from docs.typesafe.ai unless marked otherwise. Numbers change:
 before quoting a price, limit, or latency in a recommendation, re-check the live
@@ -49,10 +49,10 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 
 ## Limits, price, throughput (`/models`, `/api`)
 
-| Item | Value (2026-09-21) |
+| Item | Value (2026-10-01) |
 |---|---|
-| Price | **$0.042 per million input tokens** ($42 per billion). Output tokens are free. |
-| Rate limits | 250,000 tokens/s and 1,200 requests/min per account; "adjusting dynamically" and may change without notice; higher on custom/enterprise plans |
+| Price | **$0.042 per million input tokens** ($42 per billion). Output tokens are free. Unchanged since launch |
+| Rate limits | 100,000 tokens/s and 40 requests/s (2,400/min) per account; "adjusting dynamically" and may change without notice; higher on custom/enterprise plans. Changed after launch: on 2026-09-21 the page said 250,000 tokens/s and 1,200 requests/min, so the token ceiling fell 2.5x and the request ceiling doubled |
 | Context | 64k tokens per request (state + all questions); 32k for state + the single longest question |
 | Input | Text only. No images, audio, video, or binaries: pre-process to text in code |
 | Languages | English is the primary training language; others (incl. CJK) are "handled but not equally well"; test before relying on it |
@@ -60,7 +60,7 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 | SDKs | Python `typesafe_sdk` (Python >= 3.10), JavaScript `@typesafe-ai/sdk`; env var `TYPESAFE_API_KEY` |
 | Errors | 401 auth, 422 validation, 429 rate limit, 529 overloaded; SDKs retry with backoff and honor `retry-after` |
 | Console | https://console.typesafe.ai (keys, playground) |
-| Access | Direct API was waitlist-gated at launch (2026-09-15). Also served through Vercel AI Gateway, OpenRouter and Cloudflare AI without a waitlist. On OpenRouter the model is `typesafe/jev-1.13` (32k context, same price) on a dedicated endpoint `POST https://openrouter.ai/api/alpha/decisions` that takes the native TypeSafe body (`state`, `questions`, `model`) and returns the native answers plus `id`, `provider`, and `usage.cost`; the chat-completions endpoint rejects it with a 400. `scripts/probe.py --openrouter` uses it |
+| Access | Direct API was waitlist-gated at launch (2026-09-15). Also served through Vercel AI Gateway, OpenRouter and Cloudflare AI without a waitlist. On OpenRouter the model is `typesafe/jev-1.13` (32k context, same price; endpoint snapshot `jev-1.13-20260917`, still current on 2026-10-01; it does not appear in OpenRouter's `/api/v1/models` list, so check it at `/api/v1/models/typesafe/jev-1.13/endpoints`) on a dedicated endpoint `POST https://openrouter.ai/api/alpha/decisions` that takes the native TypeSafe body (`state`, `questions`, `model`) and returns the native answers plus `id`, `provider`, and `usage.cost`; the chat-completions endpoint rejects it with a 400. `scripts/probe.py --openrouter` uses it |
 | Hosting | US-hosted, multi-region. No EU residency option found, no SLA published, no on-prem, no open weights |
 | Determinism | Not deterministic across identical requests; no prompt caching; Choice is single-select (use one Noul per label for multi-label) |
 | Integrations | LangChain `langchain-typesafe`, Pydantic AI `TypeSafeModel`, LiteLLM, community SDKs (Go, Java, PHP, Ruby, Rust, .NET, Elixir). TypeSafe's `system-one-adapter-python` gives the same client interface backed by an LLM, usable as a fallback |
@@ -112,6 +112,41 @@ selection among candidates**. Headline categories: AI automation software,
 real-time applications, map-reduce over big text corpora, universal verification
 of other AI outputs (guardrails, citation checks, tool-call checks), and harness
 engineering (model routing, context selection).
+
+## Jev and coding agents (`/introduction/coding-agents`, added after 2026-09-21)
+
+TypeSafe added this page for people who found Jev while looking for a model
+to put behind Claude Code, Cursor, opencode, Copilot, or similar tools. Its
+answer: Jev is **not** a drop-in replacement for a coding agent's LLM. It
+does not stream text, call tools, or edit files, and no `model: "jev-latest"`
+setting turns a coding agent into a Jev-powered one. The coding agent stays
+an LLM; it writes code that *calls* Jev wherever the product needs a fast,
+calibrated, typed decision. TypeSafe's redirects, in its own order:
+
+| The person wanted to... | TypeSafe's answer |
+|---|---|
+| make the coding agent better at writing code that uses Jev | install TypeSafe's agent skill (see below) |
+| use Jev inside an app or agent for routing, classification, scoring, guardrails | Quick start, then `/concepts/how-to-build-with-system-one` and `/patterns` |
+| replace the model that powers a coding agent | not a Jev job; keep the LLM |
+| try Jev before writing code | the Playground at https://console.typesafe.ai/playground |
+
+The page's own "when Jev is worth reaching for" list is routing to a fixed
+set of destinations with a confidence, scoring on a rubric and branching on
+the number, checking whether a statement holds before an action, and
+replacing a prompt that asks an LLM to "return JSON" with typed values by
+construction. Typed values guarantee the shape of the answer, not that it is
+correct.
+
+**Jev Router** (`typesafe/jev-router` on OpenRouter, listed 2026-09-25) is the
+one place where Jev sits in a model slot. It is an LLM *router*, not Jev: it
+serves OpenRouter's chat-completions endpoint (accepts `messages`, `tools`,
+`reasoning_effort`, streaming) and uses Jev to pick the model and reasoning
+effort for each request. OpenRouter lists no fixed per-token price for it; the
+cost is that of the routed model, reported per request in `usage.cost`. The
+list of models it routes to and any quality benchmark were not published on
+OpenRouter as of 2026-10-01. So "can I use Jev as my coding agent's model?" is
+NO, while "can Jev pick which LLM my agent calls?" is a routing question that
+Jev Router or a self-built Choice over models answers.
 
 ## Official agent skill
 

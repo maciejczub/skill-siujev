@@ -48,8 +48,9 @@ you can run in an afternoon.
    trusting it as a security boundary.
 3. **Does the arithmetic.** A cost and rate-limit estimator with current
    prices for the cheap tier Jev competes with on cost (DeepSeek Flash, Qwen,
-   GLM, Gemini Flash-Lite) and the frontier tier it competes with on
-   accuracy (Terra, Sol, Astra, Opus 5, Fable 5.1), including the cascade
+   GLM, Gemini Flash-Lite, GPT-6 Luna) and the frontier tier it competes
+   with on accuracy (GPT-5.6 Terra and Sol, GPT-6 Sol and Astra, Claude
+   Sonnet 5.5, Opus 5.5 and Fable 5.1), including the cascade
    that gets frontier accuracy at a third of the price.
 4. **Delivers a verdict** per candidate: USE, USE WITH GUARDS, PILOT FIRST,
    or NO, with a question sketch, thresholds, guards, the best alternative,
