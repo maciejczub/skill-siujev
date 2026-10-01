@@ -115,12 +115,35 @@ skills/siujev/
 │   ├── alternatives.md          cheap tier, frontier tier, rerankers, self-hosting: who wins when
 │   └── evidence.md              vendor claims vs independent measurements, incl. a Polish pilot
 ├── scripts/
+│   ├── prices.json              single dated source of prices, limits and latencies
 │   ├── estimate_cost.py         cost, latency and rate-limit estimate vs LLM presets
-│   └── probe.py                 live pilot on your data (TypeSafe API or OpenRouter)
+│   ├── probe.py                 live pilot on your data (TypeSafe API or OpenRouter);
+│   │                            --validate checks a spec offline first
+│   └── check_report.py          checks a report against itself before hand-over
 └── assets/
     ├── verdict-template.md      report format
     └── pilot-spec-example.json  ready-to-run probe.py spec (48 Polish listings)
+evals/                           six evals, fixtures, and RESULTS.md
+tools/check_skill.py             repository checks, also run in CI
 ```
+
+## How well it works
+
+The evals in `evals/` were run on Claude Haiku 4.5, Sonnet 5.5 and Opus 5.5 with the
+skill, and on Sonnet 5.5 without it (with web access). A separate grader checked
+every expectation. Final scores out of 57 expectations:
+
+| Model | Score |
+|---|---|
+| Sonnet 5.5 with the skill | 54 (95 %) |
+| Opus 5.5 with the skill | 54 (95 %) |
+| Haiku 4.5 with the skill | 38 (67 %) |
+| Sonnet 5.5 without the skill | 38 (67 %) |
+
+The skill was chosen for all seven requests where it should be and none of the
+seven where it should not, on all three models. Use Sonnet or Opus for scans and
+reports; Haiku is fine for quick questions. Details, caveats and what the runs
+changed are in `evals/RESULTS.md`.
 
 ## Keeping it current
 
