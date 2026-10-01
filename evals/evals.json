@@ -82,7 +82,7 @@
         "Presents proposals as new capabilities organised by what they enable, not as replacements of existing code",
         "Includes a real-time per-message chat judgment with a review band or confidence gating",
         "Includes a plain-language rule or personalisation feature where user text goes into the question instructions",
-        "Any duplicate/matching design puts both records in the state and judges one pair per request (not several candidates packed into the question text), and keeps price comparisons in code",
+        "Any record-to-record duplicate or matching design puts both records in the state and judges one pair per request (not several candidate records packed into one state or one question), and keeps price comparisons in code; separate user-written rules as separate questions over one item are fine",
         "Persists per-item judgments (forum posts or listings) as queryable columns or a decisions table that other features reuse",
         "Gives a cost estimate per feature from the stated volumes (50k messages, 3k posts, 500 listings per day) using $0.042 per M input tokens",
         "Checks the 50k messages/day chat load against the published rate limits or notes it is far below them",

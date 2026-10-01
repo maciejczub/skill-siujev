@@ -7,13 +7,17 @@ Standard library only. The report must follow assets/verdict-template.md:
 "## Candidate N: <name>" sections and, for new capabilities,
 "### Proposal X: <name>" sections, each with one "**Verdict: <VERDICT>.**" line.
 
+A quick answer (--kind quick) is not a report: only the last three checks
+apply to it, so it is never padded into the report format.
+
 Checks (each failure prints the exact problem):
   - every candidate and proposal section has exactly one valid verdict
   - every table row has a "## Candidate N" section, with the same verdict
   - the summary states verdict counts, and they equal the counts in the sections
   - no bullet line appears twice (a duplicated list)
   - dollar figures appear only if the report cites an estimate_cost.py run
-  - the word count stays under the ceiling for --kind (quick 500, single 1,200, scan 2,500)
+  - the word count, code blocks included, stays under the ceiling for --kind
+    (quick 500, single 1,200, scan 2,500); pilot specs belong in separate files
 
 Usage:
   python3 check_report.py report.md --kind scan
@@ -84,10 +88,11 @@ def main(argv=None) -> int:
         print(f"cannot read {a.report}: {e}")
         return 2
     errors = []
+    full = a.kind != "quick"  # quick answers skip the report-structure checks (1-3)
 
     # 1. sections and their verdicts
     cand = {}
-    for h, body in sections(text, 2):
+    for h, body in sections(text, 2) if full else []:
         m = re.match(r"Candidate\s+(\d+)\s*:", h, re.I)
         if m:
             v = verdicts_in(body)
@@ -95,19 +100,19 @@ def main(argv=None) -> int:
                 errors.append(f'"## {h}": expected exactly one "**Verdict: ...**" line, found {len(v)}')
             cand[m.group(1)] = v[0] if v else None
     props = {}
-    for h, body in sections(text, 3):
+    for h, body in sections(text, 3) if full else []:
         if re.match(r"Proposal\b", h, re.I):
             v = verdicts_in(body)
             if len(v) != 1:
                 errors.append(f'"### {h}": expected exactly one "**Verdict: ...**" line, found {len(v)}')
             props[h] = v[0] if v else None
-    if not cand and not props:
+    if full and not cand and not props:
         errors.append('no "## Candidate N:" or "### Proposal X:" sections found; follow assets/verdict-template.md')
 
     # 2. table rows vs sections
     cbody = section_body(text, "Candidates")
-    rows = table_rows(cbody) if cbody else []
-    if cand and not rows:
+    rows = table_rows(cbody) if (cbody and full) else []
+    if full and cand and not rows:
         errors.append('"## Candidates" table with a Verdict column not found')
     for rid, rv in rows:
         num = re.sub(r"\D", "", rid)
@@ -125,7 +130,9 @@ def main(argv=None) -> int:
     for m in re.finditer(rf"\b(\d+)\s+({VERDICT_RE})\b", summary):
         stated[m.group(2)] += int(m.group(1))
     actual = Counter(v for v in list(cand.values()) + list(props.values()) if v)
-    if not stated:
+    if not full:
+        pass
+    elif not stated:
         errors.append('summary states no verdict counts; write them as numbers, e.g. "2 USE, 1 PILOT FIRST, 3 NO"')
     elif stated != actual:
         fmt = lambda c: ", ".join(f"{c[v]} {v}" for v in VERDICTS if c[v]) or "none"
@@ -142,8 +149,7 @@ def main(argv=None) -> int:
         errors.append("dollar figures without a cited estimate_cost.py run; name the run (command or 'from estimate_cost.py') in Economics or Assumptions")
 
     # 6. length
-    body_no_code = re.sub(r"```.*?```", "", text, flags=re.S)
-    words = len(re.findall(r"\S+", body_no_code))
+    words = len(re.findall(r"\S+", text))  # code blocks count: specs go in separate files
     if words > CEILINGS[a.kind]:
         errors.append(f"{words:,} words; the ceiling for a {a.kind} report is {CEILINGS[a.kind]:,}. Cut restatements and extra citations first")
 

@@ -166,6 +166,7 @@ def smoke():
         ([sys.executable, str(s / "probe.py"), str(SKILL / "assets" / "pilot-spec-example.json"), "--validate"], 0),
         ([sys.executable, str(s / "check_report.py"), str(fx / "report-ok.md"), "--kind", "single"], 0),
         ([sys.executable, str(s / "check_report.py"), str(fx / "report-bad.md"), "--kind", "single"], 1),
+        ([sys.executable, str(s / "check_report.py"), str(fx / "quick-ok.md"), "--kind", "quick"], 0),
         ([sys.executable, str(s / "estimate_cost.py"), "--list-presets"], 0),
         ([sys.executable, str(s / "estimate_cost.py"), "--items-per-day", "1000", "--state-tokens", "500",
           "--llm-name", "gpt-6-luna", "--llm-input-tokens", "800"], 0),

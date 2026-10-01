@@ -25,13 +25,13 @@ valuable one.>
 
 **Sketch.** <state fields; questions as `id: type — instructions — options/levels`; how code combines answers; thresholds and where uncertain cases go>
 
-**Economics.** <table or two lines from estimate_cost.py: tokens per request, cost per item / month for Jev vs incumbent and the best rival decision model, latency per item>
+**Economics.** <table or two lines from estimate_cost.py: tokens per request, cost per item, per day and per month for Jev vs incumbent and the best rival decision model, latency per item>
 
 **Risks and guards.** <bullets: each yellow signal with its guard>
 
 **Alternative if not Jev.** <the best other option, including a rival decision model, and when it would win>
 
-**Next step.** <pilot spec: number of items, labels, probe.py flags; or "implement with the official TypeSafe skill">
+**Next step.** <pilot: number of items, labels, probe.py flags, and the spec's file name (specs live next to the report, not in it); or "implement with the official TypeSafe skill">
 
 ## Candidate 2: ...
 

@@ -51,8 +51,16 @@ correctness. Paths in this file are relative to the skill directory.
   shortlist, fit-check the five or six most valuable items, and say which
   others were left for a later pass.
 - **A greenfield or product question** ("we're building X, what could Jev
-  add?"): opportunity pass only, from `references/use-case-catalog.md`, then
-  fit-check the best two or three proposals.
+  add?"): opportunity pass only.
+  - Go through every family in the family table of
+    `references/scan-signals.md` and note in one line whether it applies.
+  - Draw two to four proposals from the families that do, made concrete
+    with named examples and numbers from `references/use-case-catalog.md`.
+  - Every proposal is a new capability: say what the user gets that they
+    cannot get now.
+  - Fit-check the best two or three and price each from the stated volumes.
+  - Give a total that equals the sum of the lines, and a pilot order with the
+    reason for the first one.
 - **A comparison** ("Jev vs GPT/DeepSeek/embeddings/Liquid D1 for X"): fit
   check, then `references/alternatives.md`, then economics with the specific
   rival.
@@ -60,6 +68,17 @@ correctness. Paths in this file are relative to the skill directory.
   directly with the numbers, the source of each number, and the one or two
   caveats that change the decision. The full report format is for scans and
   for decisions someone will build on; do not pad a quick answer into one.
+  A quick cost comparison is still wrong if it skips any of these, one line
+  each:
+  - Count the questions' tokens, options included (roughly 5–15 per Choice
+    option), on top of the state.
+  - Quote the rival's per-million price and the date it was checked.
+  - Give the result of `scripts/estimate_cost.py` against both rate limits,
+    requests and tokens.
+  - State the latency change and whether the workflow needs it.
+  - Give a Choice an `other` option.
+  - Name the cheapest no-risk step on the incumbent first (prompt caching,
+    lowest reasoning setting).
 - **"Can Jev be the model behind my coding agent or chatbot?"** No, and say
   so in a few lines. Jev generates no text, calls no tools and edits no
   files, and TypeSafe's own coding-agents page says there is no setting that
@@ -83,7 +102,7 @@ Jev assessment progress:
 - [ ] 0. Each decision written in one line (what is judged, over what input, what code does with it)
 - [ ] 1. Scan: replacement pass, then opportunity pass; candidate table (scans only)
 - [ ] 2. Fit check per candidate: blockers, shape, signals, failure modes
-- [ ] 3. scripts/estimate_cost.py run per candidate and per rival; raw output kept
+- [ ] 3. scripts/estimate_cost.py run per candidate and per rival; peak load checked against both rate limits; raw output kept
 - [ ] 4. Verdicts written from assets/verdict-template.md, within the word ceiling
 - [ ] 5. A pilot spec for every PILOT FIRST, checked with scripts/probe.py --validate
 - [ ] 6. scripts/check_report.py passes on the report
@@ -187,11 +206,13 @@ questions:
   (`references/alternatives.md` §2c, measurements in
   `references/evidence.md` §5d). Name the best of them in the verdict and
   pilot it as a second arm.
-- **No model at all.** Always also compare against plain code or an existing
-  trained classifier whenever one could do the job.
+- **No model at all, or your own.** Always also compare against plain code,
+  and against a classifier fine-tuned on labels the team already has. A
+  manual review queue is a label source.
 
-Copy cost and rate figures from the script's output into the report rather
-than re-deriving them by hand; hand arithmetic on per-day versus per-month
+Copy cost and rate figures (per item, per day and per month) and the cost
+ratios from the script's output into the report rather than re-deriving
+them by hand; hand arithmetic on per-day versus per-month
 figures is where reports have slipped. Run the script once per candidate and
 once per rival, and keep the raw output next to the report.
 
@@ -211,7 +232,8 @@ thresholds and where uncertain cases go; the economics lines; risks with their
 guards; the best alternative and when it would win; and a concrete next step.
 
 Keep the report proportionate; length has been the most consistent flaw in
-past runs. Ceilings, including tables: a quick question 500 words; a single
+past runs. Ceilings, including tables and code blocks (pilot specs go in
+separate files next to the report, linked by name, not pasted in): a quick question 500 words; a single
 decision 1,200 words; a scan or greenfield shortlist 2,500 words, with the
 candidate table, 150–250 words per fit-checked candidate or proposal, and one
 line per non-candidate. Being asked for "concrete" numbers does not lift the
@@ -272,7 +294,9 @@ It checks:
 - that each economics line with a dollar figure has a script run behind it;
 - that the report stays under the word ceiling for its kind.
 
-Fix every error it reports and run it again until it passes. These slips have
+With `--kind quick` it checks only length, duplicated lists and cost
+provenance, because a quick answer is not a report. Fix every error it
+reports and run it again until it passes. These slips have
 appeared in otherwise correct reports and cost the reader's trust.
 
 ## Hand-off

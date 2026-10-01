@@ -86,6 +86,13 @@ out what to do", planning) belong to an LLM or an agent.
 These come from TypeSafe's cookbooks and from independent audits; a candidate
 whose sketch violates one of them will underperform in the pilot.
 
+- **Keep the floor.** A rules engine, keyword list or human queue that
+  already works stays as an independent signal in front of or beside Jev.
+  Jev replaces the expensive or brittle part, not the safety floor, and
+  disagreements between the two go to review.
+- **Never auto-act inside the uncertain band.** With a human queue, automatic
+  actions start above the band (TypeSafe's 0.85–0.9+ for irreversible ones),
+  and everything between the floor and that threshold goes to people.
 - **Always give an out.** A Choice always ranks something first; add
   `none` / `other` / `not_stated`, or pair it with a Noul "is there an answer
   at all". An audit found accuracy on unanswerable items going from 95 % to
