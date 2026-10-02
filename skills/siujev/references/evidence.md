@@ -375,7 +375,9 @@ questions, criteria). GPT-6 Luna, as a cheap-LLM reference, got one
 chat-completions call per item with the same questions as a strict JSON
 schema and reasoning set to `none`. Each model ran with 4 concurrent
 workers, all models in parallel, from one client in Poland; latency
-includes OpenRouter overhead. About 13,000 requests in total cost $0.77.
+includes OpenRouter overhead. About 14,000 requests in total cost $0.77.
+Mercury Decide's fresh-set run followed on 2026-10-02, once its free daily
+quota had reset.
 
 Two kinds of data:
 
@@ -400,7 +402,7 @@ Accuracy, %:
 |---|---|---|---|---|---|---|
 | Jev 1.13 | 88.5 | 80.5 | 67.0 | 89.0 | 97.2 / 85.4 | 100 / 99.3 / 100 / 98 / 100 / 97.6 / 99.4 |
 | Liquid D1 | 89.5 | 87.5 | 66.0 | 90.0 | 96.5 / 87.5 | 100 / 98.7 / 99.3 / 96 / 100 / 100 / 99.4 |
-| Mercury Decide | 91.0 | 86.5 | 66.5 | 91.5 | 98.1 / 89.6 | not run yet (free tier quota) |
+| Mercury Decide | 91.0 | 86.5 | 66.5 | 91.5 | 98.1 / 89.6 | 100 / 98.0 / 98.7 / 100 / 100 / 97.6 / 99.4 |
 | Tev1 4B | 89.5 | max 20 options | 66.0 | 90.5 | 93.8 / 91.0 | 98 / – / 98 / 91 / 100 / 96.4 / 99.4 |
 | Solar Decide | 89.0 | max 26 options | 61.0 | 85.5 | 94.4 / 86.8 | 100 / – / 98 / 87 / 96 / 94.0 / 94.6 |
 | Kev 4B | 89.5 | 87.0 | 68.5 | 82.0 | 95.1 / 89.6 | 96 / 96.7 / 88.2 / 91 / 96 / 90.5 / 85.7 |
@@ -420,17 +422,19 @@ Accuracy, %:
   - worse than Jev on the fresh yes/no questions: Span-01
 
   Everything else is a statistical tie.
-- **The contamination check.** D1's and Kev's 7-point lead on public
-  Banking77 did not survive fresh messages with the same 77 labels:
-  - fresh results: Jev 99.3, D1 98.7, Kev 96.7
-  - gain from public to fresh: Jev +18.8 and Luna +18.5, against D1 +11.2 and
-    Kev +9.7
+- **The contamination check.** The 6–7-point lead that D1, Mercury and Kev
+  had on public Banking77 did not survive fresh messages with the same 77
+  labels:
+  - fresh results: Jev 99.3, D1 98.7, Mercury 98.0, Kev 96.7
+  - gain from public to fresh: Jev +18.8 and Luna +18.5, against Mercury
+    +11.5, D1 +11.2 and Kev +9.7
 
   This is consistent with exposure to Banking77 or its label conventions
   during training, but it does not prove it. The fresh sets have clean
   author labels, so every model scored higher on them and the top models hit
   the ceiling, which compresses gaps. Kev's public strength did not carry
-  over to new text in any fresh task.
+  over to new text in any fresh task. Mercury and D1 tied Jev on every
+  fresh task (no paired difference at p < 0.05).
 - **Calibration.** Expected calibration error (ECE) of the top answer on
   AG News, Banking77 and BoolQ:
 
@@ -441,7 +445,8 @@ Accuracy, %:
   | Jev 1.13 | 0.08 | 0.09 | 0.04 |
   | Solar Decide | 0.10 | – | 0.12 |
 
-  - Jev's ECE on the fresh sets is ≤ 0.06.
+  - On the fresh sets Mercury is the best calibrated (ECE ≤ 0.04 on every
+    task); Jev's ECE is ≤ 0.06.
   - Kev is strongly underconfident: on fresh telecom intents only 20 % of
     answers reach 0.8, although all of those are right. Thresholds do not
     transfer between models; tune them per model.
@@ -451,7 +456,7 @@ Accuracy, %:
   |---|---|---|
   | Jev | 341 ms | 458 ms |
   | Tev1 | 340 ms | 566 ms |
-  | Mercury | 399 ms | 590 ms |
+  | Mercury | 389 ms | 575 ms |
   | D1 | 424 ms | 992 ms |
   | Span | 605 ms | 1.2 s |
   | Kev | 619 ms | 901 ms |

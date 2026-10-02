@@ -49,7 +49,7 @@
   "decision_models": {
     "jev-1.13":        {"name": "Jev 1.13", "openrouter_id": "typesafe/jev-1.13", "in": 0.042, "cost_per_1k_agnews": 0.0178, "p50_ms": 341, "p95_ms": 458},
     "liquid-d1":       {"name": "Liquid D1", "openrouter_id": "liquid/d1", "in": 0.04, "cost_per_1k_agnews": 0.0052, "p50_ms": 424, "p95_ms": 992},
-    "mercury-decide":  {"name": "Mercury Decide", "openrouter_id": "inception/mercury-decide:free", "in": 0.0, "cost_per_1k_agnews": 0.0, "p50_ms": 399, "p95_ms": 590},
+    "mercury-decide":  {"name": "Mercury Decide", "openrouter_id": "inception/mercury-decide:free", "in": 0.0, "cost_per_1k_agnews": 0.0, "p50_ms": 389, "p95_ms": 575},
     "tev1-4b":         {"name": "Tev1 4B experimental", "openrouter_id": "togethercomputer/tev1-4b-experimental", "in": 0.042, "cost_per_1k_agnews": 0.0086, "p50_ms": 340, "p95_ms": 566, "max_choice_options": 20},
     "solar-decide":    {"name": "Solar Decide", "openrouter_id": "upstage/solar-decide", "in": 0.05, "cost_per_1k_agnews": 0.0220, "p50_ms": 720, "p95_ms": 12495, "max_choice_options": 26},
     "kev-4b":          {"name": "Kev 4B", "openrouter_id": "jaredpalmer/kev-4b", "in": 0.042, "cost_per_1k_agnews": 0.0051, "p50_ms": 619, "p95_ms": 901},

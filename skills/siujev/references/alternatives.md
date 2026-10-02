@@ -140,7 +140,7 @@ tokens differently for the same request, so per-token prices mislead.
 |---|---|---|---|---|---|---|
 | **Jev 1.13** (`typesafe/jev-1.13`, 09-18) | 0.042 | 32k on OR | Choice ≤ 255 options | reference | 341 / 458 ms | $0.018 |
 | **Liquid D1** (`liquid/d1`, 10-01) | 0.04 | 64k | none hit | tie on every task; ahead on public Banking77, but not on a fresh mirror; best calibration | 424 / 992 ms | $0.005 |
-| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie or ahead on public sets; fresh sets not run yet | 399 / 590 ms | free |
+| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on every task; ahead on public Banking77, but not on a fresh mirror; best calibration on fresh sets | 389 / 575 ms | free |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie except fresh reviews (91 vs 98) | 340 / 566 ms | $0.009 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets | 720 ms / **12.5 s** | $0.022 |
 | **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); underconfident | 619 / 901 ms | $0.005 |
@@ -151,9 +151,9 @@ What this means for a verdict:
 - **Whenever Jev fits, price and pilot Liquid D1 next to it.** In the
   benchmark it matched Jev's accuracy, was better calibrated, and cost about a
   third as much per decision. It was slower in the tail (p95 about 2x), and it
-  had been listed for a day at the time of writing. Mercury Decide is worth
-  the same pilot while it is free, but a free preview is not a production
-  plan.
+  had been listed for a day at the time of writing. Mercury Decide also
+  matched Jev on every task and is free, so it is worth the same pilot; but a
+  free preview with a daily request cap is not a production plan.
 - **Option counts decide some cases outright.** Tev1 rejects Choice questions
   with more than 20 options and Solar with more than 26. Above that, only
   Jev, D1, Mercury and Kev remain, or you split the question
