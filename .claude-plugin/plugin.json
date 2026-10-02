@@ -1,6 +1,6 @@
 {
   "name": "siujev",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Should I use Jev? Decide where TypeSafe's Jev classifier model fits in a software system, and whether it beats code, embeddings, a fine-tuned classifier, or an LLM for a given decision.",
   "author": {
     "name": "Maciej Czub"

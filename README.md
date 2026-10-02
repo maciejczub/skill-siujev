@@ -65,7 +65,8 @@ Every number in the skill carries its source and the date it was checked, and
 the evidence file separates what TypeSafe claims from what others measured,
 including a small Polish-language pilot run for this skill because nobody
 else had measured one, and a seven-model decision-model benchmark with a
-contamination check on fresh, deliberately unpublished test sets.
+contamination check on fresh, deliberately unpublished test sets and a
+500-item stress test built on the models' documented failure modes.
 
 It complements TypeSafe's own
 [implementation skill](https://github.com/typesafe-ai/skills), which covers

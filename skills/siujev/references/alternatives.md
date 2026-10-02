@@ -131,29 +131,33 @@ models. They take the same body (`state`, typed `questions`, `criteria`) and
 return the same answer shapes. Switching between them, or keeping one as a
 fallback, is a change of the `model` string, and `scripts/probe.py` pilots any
 of them when the spec sets `"model"`. Accuracy, latency and cost below are
-from this skill's own benchmark (2026-10-01; short texts, n = 100–200 per
-task, public sets plus fresh unpublished mirrors as a contamination check).
+from this skill's own benchmark (2026-10-01 and 10-02; short texts,
+n = 80–200 per task: public sets, fresh unpublished mirrors as a
+contamination check, and a 500-item stress test built on failure modes).
 "Cost/1k" is the measured cost per 1,000 AG News decisions: providers count
 tokens differently for the same request, so per-token prices mislead.
 
 | Model (OpenRouter id, listed) | $/M in | Context | Limits found | vs Jev in the benchmark | p50 / p95 | Cost/1k |
 |---|---|---|---|---|---|---|
 | **Jev 1.13** (`typesafe/jev-1.13`, 09-18) | 0.042 | 32k on OR | Choice ≤ 255 options | reference | 341 / 458 ms | $0.018 |
-| **Liquid D1** (`liquid/d1`, 10-01) | 0.04 | 64k | none hit | tie on every task; ahead on public Banking77, but not on a fresh mirror; best calibration | 424 / 992 ms | $0.005 |
-| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on every task; ahead on public Banking77, but not on a fresh mirror; best calibration on fresh sets | 389 / 575 ms | free |
-| **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie except fresh reviews (91 vs 98) | 340 / 566 ms | $0.009 |
-| **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets | 720 ms / **12.5 s** | $0.022 |
-| **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); underconfident | 619 / 901 ms | $0.005 |
-| **Span-01** (`respan/span-01`, 09-26; Lite tier free) | 0.02 | – | **Noul only**; state must be a string or a conversation (`input` messages + `output`) | built to score behaviours in conversations; behind on yes/no reading (93 vs 100 fresh) | 605 / 1,212 ms | $0.004 (BoolQ) |
+| **Liquid D1** (`liquid/d1`, 10-01) | 0.04 | 64k | none hit | tie on public and fresh sets (ahead on public Banking77, not on a fresh mirror); behind Jev on the stress test (11 vs 2 discordant items, mostly Polish traps and reviews); best calibration on public sets | 424 / 992 ms | $0.005 |
+| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on every task run, incl. 240 stress-test items (the rest wait for quota); ahead on public Banking77, not on a fresh mirror; best calibration on fresh sets | 389 / 575 ms | free |
+| **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
+| **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
+| **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); on the stress test Polish without diacritics 7/15, long distractor passages 17/24; underconfident | 619 / 901 ms | $0.005 |
+| **Span-01** (`respan/span-01`, 09-26; Lite tier free) | 0.02 | – | **Noul only**; state must be a string or a conversation (`input` messages + `output`) | built to score behaviours in conversations; behind on yes/no reading (93 vs 100 fresh; 87 vs 100 on the stress test) | 605 / 1,212 ms | $0.004 (BoolQ) |
 
 What this means for a verdict:
 
-- **Whenever Jev fits, price and pilot Liquid D1 next to it.** In the
-  benchmark it matched Jev's accuracy, was better calibrated, and cost about a
-  third as much per decision. It was slower in the tail (p95 about 2x), and it
-  had been listed for a day at the time of writing. Mercury Decide also
-  matched Jev on every task and is free, so it is worth the same pilot; but a
-  free preview with a daily request cap is not a production plan.
+- **Whenever Jev fits, price and pilot Liquid D1 next to it.** On ordinary
+  items it matched Jev's accuracy, was better calibrated on public sets, and
+  cost about a third as much per decision. On the stress test it fell behind
+  Jev, mostly on Polish traps and sarcastic reviews, and it is slower in the
+  tail (p95 about 2x). So the trade is D1's price against Jev's robustness
+  and latency: put your hardest, messiest and non-English items in the
+  pilot, because clean items will not separate them. Mercury Decide matched
+  Jev on everything run so far and is free, so it is worth the same pilot;
+  but a free preview with a daily request cap is not a production plan.
 - **Option counts decide some cases outright.** Tev1 rejects Choice questions
   with more than 20 options and Solar with more than 26. Above that, only
   Jev, D1, Mercury and Kev remain, or you split the question
@@ -162,8 +166,15 @@ What this means for a verdict:
   candidate. Its benchmark results argue for a careful pilot on your own data
   first.
 - **Thresholds never carry across models.** Calibration differs: Kev is
-  underconfident, and Solar's long-tail latency matters on hot paths. A
-  fallback model needs its own tuned thresholds.
+  underconfident and Solar overconfident (on stress-test intents Solar put
+  100 % of answers above 0.8 and was right on 95 %; Kev put 17 % there and
+  was right on all of them). Solar's long-tail latency also matters on hot
+  paths. A fallback model needs its own tuned thresholds.
+- **Adversarial or sarcastic input narrows the field.** On injected
+  instructions Jev, D1, Mercury and GPT-6 Luna held up; on sarcastic reviews
+  only Jev and D1 did. Solar failed 3 of 10 English and 7 of 15 Polish
+  injection items. For user-submitted content, do not pick Solar, Tev1 or
+  Kev without a pilot on hostile samples.
 - **OpenAI announced a Decisions API** (GPT-6 Luna focused on a fixed set of
   answers, text and image input) as a limited preview on 2026-09-29. There
   were no public docs, pricing or schema as of 2026-10-01, and it is not on

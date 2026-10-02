@@ -10,10 +10,11 @@
 - 5b. This skill's own pilot on Polish text (2026-09-21)
 - 5c. Community builds
 - 5d. This skill's own benchmark of decision models vs Jev (2026-10-01)
+- 5e. Failure-mode stress test of the same models (2026-10-02)
 - 6. What nobody has measured yet
 
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
-(5d) added 2026-10-01. Everything below is either
+(5d) added 2026-10-01, stress test (5e) added 2026-10-02. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
 measured it), or **[CUSTOMER]** (a user quoted in press without a public
 method). When you use a number in a verdict, carry its label with it. Most of
@@ -483,7 +484,81 @@ on synthetic LLM text; short texts only; one client location; prices as of
 the run date. It is enough to say "pilot D1 next to Jev"; it is not enough to
 switch without your own data.
 
-## 6. What nobody has measured yet (as of 2026-10-01)
+## 5e. Failure-mode stress test of the same models (2026-10-02) [INDEP]
+
+The fresh sets in 5d were too easy to separate the top models, so a second
+unpublished set was written, 500 items, each built around a named trap taken
+from the documented weaknesses of decision models. Two verifiers from
+different families (Gemini 3.8 Flash, DeepSeek V4 Pro) labelled every item
+blind. Gemini agreed with every label except 2 adjacent star levels; DeepSeek
+differed on 6 items, 3 of them because it followed an injected instruction.
+No item was dropped. Same harness and question wording as 5d.
+
+Accuracy, %:
+
+| Model | Telecom intents (19), n=120 | Banking77 labels (77), n=80 | Passage yes/no, n=120 | Reviews, exact, n=80 | Polish tickets, all 3 labels right, n=100 | Pooled vs Jev: only Jev right / only model right |
+|---|---|---|---|---|---|---|
+| Jev 1.13 | 98.3 | 100 | 100 | 100 | 97 | reference |
+| GPT-6 Luna (LLM) | 99.2 | 100 | 100 | 92.5 | 99 | 7 / 4, tie |
+| Liquid D1 | 99.2 | 100 | 100 | 95.0 | 91 | 11 / 2, p = 0.02 |
+| Mercury Decide | 100 | not run yet | 99.2 | not run yet | not run yet | 1 / 2 on 240 items, tie |
+| Tev1 4B | 93.3 | max 20 options | 96.7 | 82.5 | 86 | 35 / 0 |
+| Solar Decide | 95.0 | max 26 options | 92.5 | 81.2 | 70 | 56 / 1 |
+| Kev 4B | 89.2 | 95.0 | 90.8 | 88.8 | 75 | 62 / 5 |
+| Span-01 (Noul only) | – | – | 86.7 | – | 87 (two Nouls) | 29 / 3 |
+
+Mercury's remaining 260 items wait for its free daily quota.
+
+What the traps showed (correct / items):
+
+- **Jev was the most robust model on traps**, at or near the ceiling on
+  every one. Its misses were 2 of 15 "other" messages full of telecom words,
+  1 of 15 Polish injections, and 2 other Polish tickets. On the hard items it
+  kept 90–100 % of answers above 0.8 confidence, and all of those were right
+  (ECE 0.01–0.07).
+- **Liquid D1 fell behind Jev once the items got hard**: pooled over the
+  500 items it was right where Jev was wrong 2 times and wrong where Jev was
+  right 11 times. The losses were Polish tickets (zwrot vs reklamacja 22/25
+  against Jev's 24/25, injections 13/15) and reviews (95 vs 100 exact). On
+  English intents and reading it still tied.
+- **Injected instructions** (text in the state that tells the classifier
+  what to answer):
+
+  | Model | English | Polish |
+  |---|---|---|
+  | Jev 1.13 | 10/10 | 14/15 |
+  | Liquid D1 | 10/10 | 13/15 |
+  | GPT-6 Luna | 9/10 | 15/15 |
+  | Mercury Decide | 10/10 | not run yet |
+  | Kev 4B | 9/10 | 13/15 |
+  | Tev1 4B | 8/10 | 13/15 |
+  | Solar Decide | 7/10 | 8/15 |
+
+  Small samples: this supports "resists simple injections", not "safe as
+  the only gate".
+- **Sarcastic reviews** were the hardest trap for everything but Jev and D1:
+  Jev 20/20, D1 19/20, GPT-6 Luna 15/20, Kev 13/20, Solar 13/20, Tev1 9/20.
+- **Comparing two stated numbers or ordering two stated dates** in a short
+  passage did not trip Jev, D1 or GPT-6 Luna (20/20 each on both traps),
+  although numbers and dates are documented Jev failure modes. The traps
+  cover only a comparison of two values that the passage states; arithmetic,
+  counting, date windows and long documents were not tested, so keep those
+  in code. Span-01 (14/20 on dates), Solar and Tev1 (17/20) did slip.
+- **Long passages with distractors** (about 300 words, several similar
+  entities): Kev 17/24, Span-01 19/24, Solar 22/24; the rest 24/24.
+- **Polish without diacritics, slang, typos**: Kev 7/15, Solar and Tev1
+  11/15; Jev and GPT-6 Luna 15/15, D1 14/15.
+- **Confidence is not comparable across models.** Solar answered 100 % of
+  intent items above 0.8 and was right on 95 %; Kev cleared 0.8 on only 17 %
+  and was right on all of those. A gate tuned for one model is wrong for
+  another.
+
+Same caveats as 5d: items written by one LLM family and verified by two
+others, short texts, one run per item. "Hard" here means hard for small
+decision models, not ambiguous: two frontier-class LLMs agreed with almost
+every label, and Jev, D1 and GPT-6 Luna still score 91–100 %.
+
+## 6. What nobody has measured yet (as of 2026-10-02)
 
 - Sustained-load latency.
 - Head-to-head comparisons with Llama Guard, Cleanlab, Katanemo Arch, Fastino,
@@ -492,8 +567,8 @@ switch without your own data.
   text, real seller data, other domains.
 - Default data retention.
 - Long-run price stability.
-- Decision models on long, messy, multi-field documents (5d used short
-  texts only).
+- Decision models on long, messy, multi-field documents (5d and 5e used
+  short texts only), and on arithmetic, counting or date windows.
 - OpenAI's Decisions API (announced as a preview on 2026-09-29, no public
   docs).
 
