@@ -42,8 +42,9 @@ you can run in an afternoon.
    takes, rules your users write in plain language. A catalog of what people
    have built, by capability family and with their numbers, keeps the
    proposals concrete.
-2. **Checks each one honestly.** Hard blockers (generation, arithmetic, dates,
-   multi-hop reasoning, images, 32k tokens, on-prem), decision shape, the
+2. **Checks each one honestly.** Hard blockers (generation, including "be
+   the model behind my coding agent", arithmetic, dates, multi-hop reasoning,
+   images, 32k tokens, on-prem), decision shape, the
    nine failure modes TypeSafe itself documents, and the traps independent
    audits found: no `none` option, packing items to rank into one state,
    trusting it as a security boundary.
@@ -54,19 +55,25 @@ you can run in an afternoon.
    Sonnet 5.5, Opus 5.5 and Fable 5.1), including the cascade that gets
    frontier accuracy at a third of the price. It also covers the decision
    models that now take Jev's exact API (Liquid D1, Mercury Decide, Solar
-   Decide, Tev1, Kev 4B), benchmarked head to head against Jev.
+   Decide, Tev1, Kev 4B, Span-01), benchmarked head to head against Jev. The
+   short version: Liquid D1 matched Jev on ordinary items at about a third
+   of the cost per decision, and Jev was the most robust on a stress test of
+   traps (negation, sarcasm, injected instructions, Polish edge cases).
 4. **Delivers a verdict** per candidate: USE, USE WITH GUARDS, PILOT FIRST,
    or NO, with a question sketch, thresholds, guards, the best alternative,
-   and a next step. A bundled pilot script runs your own samples through the
-   live API (directly or via OpenRouter) and reports agreement, uncertainty,
-   repeat stability, and latency before you commit.
+   and a next step. A bundled pilot script checks your spec offline, then
+   runs your own samples through the live API (directly or via OpenRouter)
+   and reports agreement, uncertainty, repeat stability, and latency before
+   you commit. The same spec pilots a rival decision model by changing one
+   field. A second script checks the finished report against itself: verdict
+   counts, cost provenance, length.
 
 Every number in the skill carries its source and the date it was checked, and
 the evidence file separates what TypeSafe claims from what others measured,
 including a small Polish-language pilot run for this skill because nobody
-else had measured one, and a seven-model decision-model benchmark with a
-contamination check on fresh, deliberately unpublished test sets and a
-500-item stress test built on the models' documented failure modes.
+else had measured one, and a benchmark of seven decision models plus a cheap
+LLM, with a contamination check on fresh, deliberately unpublished test sets
+and a 500-item stress test built on the models' documented failure modes.
 
 It complements TypeSafe's own
 [implementation skill](https://github.com/typesafe-ai/skills), which covers
@@ -89,6 +96,18 @@ npx skills add maciejczub/skill-siujev --skill siujev
 
 Manual: copy `skills/siujev/` into your agent's skills directory.
 
+Update an installed Claude Code plugin (the facts in this skill date quickly,
+and an installed copy does not update itself):
+
+```bash
+claude plugin marketplace update siujev
+claude plugin update siujev@siujev
+```
+
+Then restart the session. The scripts need Python 3 (tested on 3.12) and
+nothing outside the standard library; the pilot script also needs network access and
+a TypeSafe or OpenRouter API key.
+
 ## Use
 
 Ask your agent things like:
@@ -100,6 +119,10 @@ Ask your agent things like:
 > We're building a marketplace for used board games. What could Jev add, what would it cost at 500 listings a day, and what should we pilot first?
 >
 > We do 300k intent classifications a day with DeepSeek. Someone says Jev is 400x cheaper. Is that true for us, and would it be as accurate?
+>
+> Compare Jev and Liquid D1 for live chat moderation at 50k messages a day.
+>
+> Can I set Jev as the model in Cursor to make my coding agent cheaper?
 
 In Claude Code you can invoke it directly with `/siujev:siujev`.
 
@@ -113,8 +136,10 @@ skills/siujev/
 │   ├── fit-checklist.md         blockers, decision shapes, green/yellow signals, design rules
 │   ├── scan-signals.md          how to find candidates: replacement pass and opportunity pass
 │   ├── use-case-catalog.md      what people build with Jev, by capability family, with numbers
-│   ├── alternatives.md          cheap tier, frontier tier, rerankers, self-hosting: who wins when
-│   └── evidence.md              vendor claims vs independent measurements, incl. a Polish pilot
+│   ├── alternatives.md          cheap tier, frontier tier, rival decision models, rerankers,
+│   │                            self-hosting: who wins when
+│   └── evidence.md              vendor claims vs independent measurements, incl. this skill's
+│                                own Polish pilot, decision-model benchmark and stress test
 ├── scripts/
 │   ├── prices.json              single dated source of prices, limits and latencies
 │   ├── estimate_cost.py         cost, latency and rate-limit estimate vs LLM presets
@@ -148,9 +173,22 @@ changed are in `evals/RESULTS.md`.
 
 ## Keeping it current
 
-Jev shipped on 2026-09-15 and its prices, limits, and failure-mode list change.
-Every reference file carries the date it was checked and the live URL to
-re-check. Pull requests that update numbers with a source are welcome.
+Jev shipped on 2026-09-15 and its prices, limits, and failure-mode list change;
+its rate limits changed within two weeks of launch. Every reference file
+carries the date it was checked and the live URL to re-check. Prices and limits
+were last refreshed on 2026-10-01 and the benchmarks run on 2026-10-01 and
+2026-10-02.
+
+Pull requests that update numbers with a source are welcome. Prices, limits and
+latencies live in `skills/siujev/scripts/prices.json`; change them there and in
+the matching table of `references/alternatives.md`, then run
+
+```bash
+python3 tools/check_skill.py
+```
+
+which checks that the two agree, along with the skill's format rules and the
+scripts. CI runs the same check on every push.
 
 ## License
 
