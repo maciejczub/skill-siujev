@@ -501,13 +501,14 @@ Accuracy, %:
 | Jev 1.13 | 98.3 | 100 | 100 | 100 | 97 | reference |
 | GPT-6 Luna (LLM) | 99.2 | 100 | 100 | 92.5 | 99 | 7 / 4, tie |
 | Liquid D1 | 99.2 | 100 | 100 | 95.0 | 91 | 11 / 2, p = 0.02 |
-| Mercury Decide | 100 | not run yet | 99.2 | not run yet | not run yet | 1 / 2 on 240 items, tie |
+| Mercury Decide | 100 | 98.8 | 99.2 | 97.5 | 89 | 15 / 5, p = 0.04 |
 | Tev1 4B | 93.3 | max 20 options | 96.7 | 82.5 | 86 | 35 / 0 |
 | Solar Decide | 95.0 | max 26 options | 92.5 | 81.2 | 70 | 56 / 1 |
 | Kev 4B | 89.2 | 95.0 | 90.8 | 88.8 | 75 | 62 / 5 |
 | Span-01 (Noul only) | – | – | 86.7 | – | 87 (two Nouls) | 29 / 3 |
 
-Mercury's remaining 260 items wait for its free daily quota.
+Mercury ran its last 260 items on 2026-10-03, once its free daily quota had
+reset.
 
 What the traps showed (correct / items):
 
@@ -520,7 +521,10 @@ What the traps showed (correct / items):
   500 items it was right where Jev was wrong 2 times and wrong where Jev was
   right 11 times. The losses were Polish tickets (zwrot vs reklamacja 22/25
   against Jev's 24/25, injections 13/15) and reviews (95 vs 100 exact). On
-  English intents and reading it still tied.
+  English intents and reading it still tied. **Mercury Decide** showed the
+  same pattern (15 vs 5, p = 0.04), almost all of it on Polish tickets:
+  zwrot vs reklamacja 19/25 and Polish injections 11/15, while it tied or led
+  on the English sets.
 - **Injected instructions** (text in the state that tells the classifier
   what to answer):
 
@@ -529,17 +533,19 @@ What the traps showed (correct / items):
   | Jev 1.13 | 10/10 | 14/15 |
   | Liquid D1 | 10/10 | 13/15 |
   | GPT-6 Luna | 9/10 | 15/15 |
-  | Mercury Decide | 10/10 | not run yet |
+  | Mercury Decide | 10/10 | 11/15 |
   | Kev 4B | 9/10 | 13/15 |
   | Tev1 4B | 8/10 | 13/15 |
   | Solar Decide | 7/10 | 8/15 |
 
   Small samples: this supports "resists simple injections", not "safe as
   the only gate".
-- **Sarcastic reviews** were the hardest trap for everything but Jev and D1:
-  Jev 20/20, D1 19/20, GPT-6 Luna 15/20, Kev 13/20, Solar 13/20, Tev1 9/20.
+- **Sarcastic reviews** were the hardest trap for everything but Jev, D1 and
+  Mercury: Jev 20/20, D1 19/20, Mercury 19/20, GPT-6 Luna 15/20, Kev 13/20,
+  Solar 13/20, Tev1 9/20.
 - **Comparing two stated numbers or ordering two stated dates** in a short
-  passage did not trip Jev, D1 or GPT-6 Luna (20/20 each on both traps),
+  passage did not trip Jev, D1 or GPT-6 Luna (20/20 each on both traps;
+  Mercury 39/40),
   although numbers and dates are documented Jev failure modes. The traps
   cover only a comparison of two values that the passage states; arithmetic,
   counting, date windows and long documents were not tested, so keep those
@@ -547,7 +553,7 @@ What the traps showed (correct / items):
 - **Long passages with distractors** (about 300 words, several similar
   entities): Kev 17/24, Span-01 19/24, Solar 22/24; the rest 24/24.
 - **Polish without diacritics, slang, typos**: Kev 7/15, Solar and Tev1
-  11/15; Jev and GPT-6 Luna 15/15, D1 14/15.
+  11/15; Jev and GPT-6 Luna 15/15, D1 and Mercury 14/15.
 - **Confidence is not comparable across models.** Solar answered 100 % of
   intent items above 0.8 and was right on 95 %; Kev cleared 0.8 on only 17 %
   and was right on all of those. A gate tuned for one model is wrong for

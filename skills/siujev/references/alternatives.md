@@ -141,7 +141,7 @@ tokens differently for the same request, so per-token prices mislead.
 |---|---|---|---|---|---|---|
 | **Jev 1.13** (`typesafe/jev-1.13`, 09-18) | 0.042 | 32k on OR | Choice ≤ 255 options | reference | 341 / 458 ms | $0.018 |
 | **Liquid D1** (`liquid/d1`, 10-01) | 0.04 | 64k | none hit | tie on public and fresh sets (ahead on public Banking77, not on a fresh mirror); behind Jev on the stress test (11 vs 2 discordant items, mostly Polish traps and reviews); best calibration on public sets | 424 / 992 ms | $0.005 |
-| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on every task run, incl. 240 stress-test items (the rest wait for quota); ahead on public Banking77, not on a fresh mirror; best calibration on fresh sets | 389 / 575 ms | free |
+| **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on public and fresh sets (ahead on public Banking77, not on a fresh mirror); behind Jev on the stress test (15 vs 5 discordant items, mostly Polish return-vs-complaint and injections); best calibration on fresh sets | 389 / 575 ms | free |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
 | **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); on the stress test Polish without diacritics 7/15, long distractor passages 17/24; underconfident | 619 / 901 ms | $0.005 |
@@ -155,9 +155,10 @@ What this means for a verdict:
   Jev, mostly on Polish traps and sarcastic reviews, and it is slower in the
   tail (p95 about 2x). So the trade is D1's price against Jev's robustness
   and latency: put your hardest, messiest and non-English items in the
-  pilot, because clean items will not separate them. Mercury Decide matched
-  Jev on everything run so far and is free, so it is worth the same pilot;
-  but a free preview with a daily request cap is not a production plan.
+  pilot, because clean items will not separate them. Mercury Decide behaves
+  like D1, a tie on ordinary items and behind Jev on Polish traps; it is
+  free, so it is worth the same pilot, but a free preview with a daily
+  request cap is not a production plan.
 - **Option counts decide some cases outright.** Tev1 rejects Choice questions
   with more than 20 options and Solar with more than 26. Above that, only
   Jev, D1, Mercury and Kev remain, or you split the question
@@ -171,8 +172,9 @@ What this means for a verdict:
   was right on all of them). Solar's long-tail latency also matters on hot
   paths. A fallback model needs its own tuned thresholds.
 - **Adversarial or sarcastic input narrows the field.** On injected
-  instructions Jev, D1, Mercury and GPT-6 Luna held up; on sarcastic reviews
-  only Jev and D1 did. Solar failed 3 of 10 English and 7 of 15 Polish
+  instructions Jev, D1 and GPT-6 Luna held up in both languages (23–24 of
+  25); Mercury held in English (10/10) but failed 4 of 15 Polish items. On
+  sarcastic reviews only Jev, D1 and Mercury held up. Solar failed 3 of 10 English and 7 of 15 Polish
   injection items. For user-submitted content, do not pick Solar, Tev1 or
   Kev without a pilot on hostile samples.
 - **OpenAI announced a Decisions API** (GPT-6 Luna focused on a fixed set of
