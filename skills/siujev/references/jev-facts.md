@@ -36,8 +36,10 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 - No longer the only model of its kind. Between 2026-09-25 and 10-01,
   OpenRouter added six other decision models that take the same request body:
   Liquid D1, Inception Mercury Decide, Upstage Solar Decide, Together Tev1,
-  Kev 4B and Respan Span-01. OpenAI previewed a Luna-backed "Decisions API"
-  on 2026-09-29, with no public docs yet.
+  Kev 4B and Respan Span-01; since then OpenAI's own Decisions API
+  (GPT-6 Luna; public beta on 2026-10-09; OpenRouter lists it as
+  `openai/gpt-6-luna-decisions`), Perplexity Decider, Cloudflare Clef and
+  others.
 
 ## The three primitives (`/primitives`, `/api`)
 

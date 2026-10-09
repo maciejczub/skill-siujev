@@ -11,10 +11,11 @@
 - 5c. Community builds
 - 5d. This skill's own benchmark of decision models vs Jev (2026-10-01)
 - 5e. Failure-mode stress test of the same models (2026-10-02)
+- 5f. Four more decision models, including OpenAI's (2026-10-09)
 - 6. What nobody has measured yet
 
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
-(5d) added 2026-10-01, stress test (5e) added 2026-10-02. Everything below is either
+(5d) added 2026-10-01, stress test (5e) added 2026-10-02, four more models (5f) 2026-10-09. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
 measured it), or **[CUSTOMER]** (a user quoted in press without a public
 method). When you use a number in a verdict, carry its label with it. Most of
@@ -564,7 +565,71 @@ others, short texts, one run per item. "Hard" here means hard for small
 decision models, not ambiguous: two frontier-class LLMs agreed with almost
 every label, and Jev, D1 and GPT-6 Luna still score 91–100 %.
 
-## 6. What nobody has measured yet (as of 2026-10-02)
+## 5f. Four more decision models, including OpenAI's (2026-10-09) [INDEP]
+
+Between 2026-10-01 and 10-09 OpenRouter listed more decision models, among
+them OpenAI's own. Four were run through the whole harness of 5d and 5e
+(2,132 requests each: public sets, fresh mirrors and the 500-item stress
+test, same questions, same labels, same day) against the earlier results:
+OpenAI Decisions (`openai/gpt-6-luna-decisions`), Perplexity Decider 27B,
+Cloudflare Clef and Cloudflare Clef Flash. They are reached through
+OpenRouter's wrapper, which takes Jev's request body. For OpenAI that is not
+the native `/v1/decisions` contract (`predicate`, `choice`, `score`), so
+latency includes OpenRouter. The four runs cost about $0.24 in total.
+
+Accuracy, %:
+
+| Model | Public: AG News / Banking77 / BoolQ | Fresh: Banking77 labels / reviews exact | Stress test: intents / yes-no / reviews exact / Polish all-correct | Stress test, pooled vs Jev (only Jev right / only model right) |
+|---|---|---|---|---|
+| Jev 1.13 | 88.5 / 80.5 / 89.0 | 99.3 / 98.0 | 98.3 / 100 / 100 / 97 | reference |
+| OpenAI Decisions | 88.0 / 79.4 / 88.0 | 97.4 / 97.0 | 99.2 / 100 / 97.5 / 96 | 5 / 3, p = 0.73 |
+| Perplexity Decider 27B | 91.0 / 81.5 / 93.5 | 99.3 / 100 | 99.2 / 100 / 96.2 / 99 | 5 / 5, p = 1.0 |
+| Cloudflare Clef | 92.0 / 94.0 / 88.5 | 95.4 / 93.0 | 97.5 / 100 / 96.2 / 90 | 13 / 0, p < 0.001 |
+| Cloudflare Clef Flash | 90.5 / 95.0 / 88.0 | 96.1 / 96.0 | 95.0 / 97.5 / 95.0 / 86 | 26 / 1, p < 0.001 |
+
+- **OpenAI Decisions tied Jev everywhere**, including the stress test. Its
+  injection items: 9/10 in English, 12/15 in Polish. Its Polish return vs
+  complaint was 25/25. It refused one of 2,132 questions (a Banking77
+  message), which arrives as a `refusal` answer natively and as HTTP 502 on
+  OpenRouter. On the same 2,132 requests it was not faster than Jev in this
+  setup (p50 437 against 358 ms, p95 720 against 689 ms), though it was
+  2.8x faster than GPT-6 Luna through chat completions (1,225 ms).
+- **Perplexity Decider 27B also tied Jev**, was the strongest on Polish traps
+  (99 % all three labels right, 15/15 Polish injections), and beat Jev on
+  public BoolQ (93.5 against 89.0, p = 0.02). Its answers on reviews were
+  less confident: only 68 % of stress-test reviews cleared 0.8, although all
+  of those were right.
+- **Clef and Clef Flash look trained on Banking77.** Public Banking77 94.0 and
+  95.0 beat Jev's 80.5 (27 items only Clef had right, none only Jev), but on a
+  fresh mirror with the same labels they scored 95.4 and 96.1 and trailed
+  Jev's 99.3. From public to fresh they gained +1.4 and +1.1 points where Jev
+  gained +18.8 and every other model at least +9.7. That fits training-data
+  exposure but does not prove it. On the stress test both were significantly
+  behind Jev, mostly on Polish tickets (Clef all-correct 90 %, Flash 86 %) and
+  on "other" messages full of telecom words (12/15 and 11/15).
+- **Cost per 1,000 AG News decisions** (input tokens counted by each
+  provider):
+
+  | Model | Tokens | Cost | Banking77 / Polish tickets |
+  |---|---|---|---|
+  | Perplexity Decider 27B | 189 | $0.0038 | $0.019 / $0.015 |
+  | Clef Flash | 245 | $0.0062 | $0.046 / $0.016 |
+  | Clef | 245 | $0.0115 | $0.090 / $0.033 |
+  | Jev 1.13 | 423 | $0.0178 | $0.071 / $0.031 |
+  | OpenAI Decisions | 209 | $0.0209 | $0.099 / $0.088 |
+
+  OpenAI's per-token price is 2.4x Jev's but it counts fewer tokens on
+  English, so it costs only 1.2x Jev per English decision; Polish text counts
+  as 876 tokens against Jev's 736, which makes it 2.8x.
+- **Latency, p50 / p95:** OpenAI 437 / 720 ms, Clef Flash 534 / 1,564 ms,
+  Clef 569 / 1,379 ms, Perplexity 602 / 1,068 ms; Jev 358 / 689 ms on the
+  same requests.
+
+Same caveats as 5d and 5e. In addition, two more listed models
+(`upstage/solar-decide-flash`, `inception/mercury-decide`, the paid tier of
+Mercury) were not benchmarked.
+
+## 6. What nobody has measured yet (as of 2026-10-09)
 
 - Sustained-load latency.
 - Head-to-head comparisons with Llama Guard, Cleanlab, Katanemo Arch, Fastino,
@@ -575,7 +640,8 @@ every label, and Jev, D1 and GPT-6 Luna still score 91–100 %.
 - Long-run price stability.
 - Decision models on long, messy, multi-field documents (5d and 5e used
   short texts only), and on arithmetic, counting or date windows.
-- OpenAI's Decisions API (announced as a preview on 2026-09-29, no public
-  docs).
+- OpenAI's Decisions API through its native `/v1/decisions` endpoint (5f used
+  OpenRouter's wrapper), its image input, and the paid Mercury and
+  Solar Flash tiers.
 
 If a verdict depends on one of these, it is PILOT FIRST.

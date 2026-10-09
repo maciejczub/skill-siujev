@@ -53,6 +53,10 @@
     "tev1-4b":         {"name": "Tev1 4B experimental", "openrouter_id": "togethercomputer/tev1-4b-experimental", "in": 0.042, "cost_per_1k_agnews": 0.0086, "p50_ms": 340, "p95_ms": 566, "max_choice_options": 20},
     "solar-decide":    {"name": "Solar Decide", "openrouter_id": "upstage/solar-decide", "in": 0.05, "cost_per_1k_agnews": 0.0220, "p50_ms": 720, "p95_ms": 12495, "max_choice_options": 26},
     "kev-4b":          {"name": "Kev 4B", "openrouter_id": "jaredpalmer/kev-4b", "in": 0.042, "cost_per_1k_agnews": 0.0051, "p50_ms": 619, "p95_ms": 901},
+    "openai-decisions": {"name": "OpenAI Decisions", "openrouter_id": "openai/gpt-6-luna-decisions", "in": 0.10, "cost_per_1k_agnews": 0.0209, "p50_ms": 437, "p95_ms": 720},
+    "perplexity-decider": {"name": "Perplexity Decider 27B", "openrouter_id": "perplexity/pplx-decider-v1.1-27b", "in": 0.02, "cost_per_1k_agnews": 0.0038, "p50_ms": 602, "p95_ms": 1068},
+    "clef":            {"name": "Cloudflare Clef", "openrouter_id": "cloudflare/clef", "in": 0.24, "cost_per_1k_agnews": 0.0115, "p50_ms": 569, "p95_ms": 1379},
+    "clef-flash":      {"name": "Cloudflare Clef Flash", "openrouter_id": "cloudflare/clef-flash", "in": 0.021, "cost_per_1k_agnews": 0.0062, "p50_ms": 534, "p95_ms": 1564},
     "span-01":         {"name": "Span-01", "openrouter_id": "respan/span-01", "in": 0.02, "cost_per_1k_boolq": 0.0042, "p50_ms": 605, "p95_ms": 1212, "noul_only": true}
   }
 }

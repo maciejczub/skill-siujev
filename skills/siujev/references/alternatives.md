@@ -123,25 +123,33 @@ Gemini 3.8 Pro was not listed by Google or OpenRouter on 2026-09-22, nor on
 OpenRouter on 2026-10-01; the Pro tier available was Gemini 3.1 Pro Preview at
 2.00 / 0.20 / 12.00.
 
-## 2c. Other decision models (same request body as Jev, checked 2026-10-01)
+## 2c. Other decision models (same request body as Jev, checked 2026-10-09)
 
-Jev stopped being the only model of its kind ten days after launch.
+Jev stopped being the only model of its kind ten days after launch, and by
+2026-10-09 OpenRouter listed sixteen decision models, among them OpenAI's own.
 OpenRouter's `/api/alpha/decisions` endpoint serves several vendors' decision
 models. They take the same body (`state`, typed `questions`, `criteria`) and
 return the same answer shapes. Switching between them, or keeping one as a
 fallback, is a change of the `model` string, and `scripts/probe.py` pilots any
 of them when the spec sets `"model"`. Accuracy, latency and cost below are
-from this skill's own benchmark (2026-10-01 and 10-02; short texts,
+from this skill's own benchmark (2026-10-01 to 10-09; short texts,
 n = 80–200 per task: public sets, fresh unpublished mirrors as a
 contamination check, and a 500-item stress test built on failure modes).
 "Cost/1k" is the measured cost per 1,000 AG News decisions: providers count
 tokens differently for the same request, so per-token prices mislead.
+Latencies of the four models added on 2026-10-09 (OpenAI Decisions,
+Perplexity, Clef, Clef Flash) are over all 2,132 requests of their run, and
+Jev's over the same requests was 358 / 689 ms; older rows are from earlier runs.
 
 | Model (OpenRouter id, listed) | $/M in | Context | Limits found | vs Jev in the benchmark | p50 / p95 | Cost/1k |
 |---|---|---|---|---|---|---|
 | **Jev 1.13** (`typesafe/jev-1.13`, 09-18) | 0.042 | 32k on OR | Choice ≤ 255 options | reference | 341 / 458 ms | $0.018 |
 | **Liquid D1** (`liquid/d1`, 10-01) | 0.04 | 64k | none hit | tie on public and fresh sets (ahead on public Banking77, not on a fresh mirror); behind Jev on the stress test (11 vs 2 discordant items, mostly Polish traps and reviews); best calibration on public sets | 424 / 992 ms | $0.005 |
 | **Mercury Decide** (`inception/mercury-decide:free`, 09-30) | free (preview) | 32k | free-tier daily request cap per key | tie on public and fresh sets (ahead on public Banking77, not on a fresh mirror); behind Jev on the stress test (15 vs 5 discordant items, mostly Polish return-vs-complaint and injections); best calibration on fresh sets | 389 / 575 ms | free |
+| **OpenAI Decisions** (`openai/gpt-6-luna-decisions`, 10-06; GPT-6 Luna behind OpenAI's Decisions API, public beta) | 0.10, input only | 1.05M, text and images | none hit; 1 of 2,132 questions was a `refusal` | tie on every set, incl. the stress test (5 vs 3 discordant items, p = 0.73); best on Polish return-vs-complaint (25/25) | 437 / 720 ms | $0.021 (Polish: $0.088, 2.8x Jev) |
+| **Perplexity Decider 27B** (`perplexity/pplx-decider-v1.1-27b`, 10-07) | 0.02 | not listed | none hit | tie on every set, incl. the stress test (5 vs 5); best on Polish traps (99 % all-correct, 15/15 injections); public BoolQ 93.5 vs Jev 89 (p = 0.02); weaker gating on reviews (68 % above 0.8) | 602 / 1,068 ms | $0.004 |
+| **Cloudflare Clef** (`cloudflare/clef`, 10-01; served by PrimeIntellect) | 0.24 | not listed | none hit | behind Jev on the stress test (13 vs 0, p < 0.001; Polish all-correct 90 %); public Banking77 94.0 vs Jev 80.5 but only 95.4 on a fresh mirror (+1.4 points, the smallest gain of any model: consistent with training on Banking77) | 569 / 1,379 ms | $0.012 |
+| **Cloudflare Clef Flash** (`cloudflare/clef-flash`, 10-01) | 0.021 | not listed | none hit | like Clef, weaker: behind Jev on the stress test (26 vs 1; Polish all-correct 86 %, 11/15 injections) | 534 / 1,564 ms | $0.006 |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
 | **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); on the stress test Polish without diacritics 7/15, long distractor passages 17/24; underconfident | 619 / 901 ms | $0.005 |
@@ -149,7 +157,17 @@ tokens differently for the same request, so per-token prices mislead.
 
 What this means for a verdict:
 
-- **Whenever Jev fits, price and pilot Liquid D1 next to it.** On ordinary
+- **Whenever Jev fits, price and pilot OpenAI Decisions, Perplexity and
+  Liquid D1 next to it.** OpenAI Decisions and Perplexity were the only two
+  rivals that tied Jev on the stress test as well (5 vs 3 and 5 vs 5
+  discordant items). OpenAI's costs about as much as Jev per decision on
+  English text and 2.8x as much on Polish, because the same Polish ticket
+  counts as 876 tokens against Jev's 736 and the price per token is 2.4x;
+  it adds image input, ZDR, HIPAA, and processing in the EU (Jev is
+  US-only). Perplexity cost about a fifth of Jev per decision ($0.004 against
+  $0.018 per 1,000 AG News items), was the strongest on Polish traps, and is
+  slower (p50 602 ms against 358). Both are new: pilot on your own data.
+  Liquid D1 comes with a caveat: on ordinary
   items it matched Jev's accuracy, was better calibrated on public sets, and
   cost about a third as much per decision. On the stress test it fell behind
   Jev, mostly on Polish traps and sarcastic reviews, and it is slower in the
@@ -177,11 +195,15 @@ What this means for a verdict:
   sarcastic reviews only Jev, D1 and Mercury held up. Solar failed 3 of 10 English and 7 of 15 Polish
   injection items. For user-submitted content, do not pick Solar, Tev1 or
   Kev without a pilot on hostile samples.
-- **OpenAI announced a Decisions API** (GPT-6 Luna focused on a fixed set of
-  answers, text and image input) as a limited preview on 2026-09-29. There
-  were no public docs, pricing or schema as of 2026-10-01, and it is not on
-  OpenRouter. Do not cite numbers for it beyond OpenAI's demo claim of about
-  150 ms per request.
+- **OpenAI's Decisions API** (public beta on 2026-10-09; OpenAI expects GA
+  within weeks) has its own contract: `POST /v1/decisions` with `input` (text
+  or images) and named `questions` of type `predicate` (probability),
+  `choice` or `score`; only `gpt-6-luna` is available. A question can come
+  back as a `refusal`, which OpenRouter surfaces as HTTP 502: handle it. This
+  skill benchmarked it through OpenRouter's TypeSafe-style wrapper, not the
+  native endpoint, so latency includes OpenRouter. OpenAI claims about 10x
+  the speed of the Responses API; measured against GPT-6 Luna through chat
+  completions it was 2.8x faster (437 against 1,225 ms p50).
 
 ## 2d. Superseded models (kept because measurements used them)
 

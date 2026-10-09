@@ -54,11 +54,13 @@ you can run in an afternoon.
    with on accuracy (GPT-5.6 Terra and Sol, GPT-6 Sol and Astra, Claude
    Sonnet 5.5, Opus 5.5 and Fable 5.1), including the cascade that gets
    frontier accuracy at a third of the price. It also covers the decision
-   models that now take Jev's exact API (Liquid D1, Mercury Decide, Solar
-   Decide, Tev1, Kev 4B, Span-01), benchmarked head to head against Jev. The
-   short version: Liquid D1 matched Jev on ordinary items at about a third
-   of the cost per decision, and Jev was the most robust on a stress test of
-   traps (negation, sarcasm, injected instructions, Polish edge cases).
+   models that now take Jev's API (OpenAI Decisions, Perplexity Decider,
+   Liquid D1, Mercury, Cloudflare Clef, Solar, Tev1, Kev 4B, Span-01),
+   benchmarked head to head against Jev. The short version: on a stress test
+   of traps (negation, sarcasm, injected instructions, Polish edge cases) only
+   OpenAI Decisions and Perplexity tied Jev; Liquid D1 matched it on ordinary
+   items at about a third of the cost per decision, and Clef looks trained on
+   Banking77.
 4. **Delivers a verdict** per candidate: USE, USE WITH GUARDS, PILOT FIRST,
    or NO, with a question sketch, thresholds, guards, the best alternative,
    and a next step. A bundled pilot script checks your spec offline, then
@@ -71,7 +73,7 @@ you can run in an afternoon.
 Every number in the skill carries its source and the date it was checked, and
 the evidence file separates what TypeSafe claims from what others measured,
 including a small Polish-language pilot run for this skill because nobody
-else had measured one, and a benchmark of seven decision models plus a cheap
+else had measured one, and a benchmark of eleven decision models plus a cheap
 LLM, with a contamination check on fresh, deliberately unpublished test sets
 and a 500-item stress test built on the models' documented failure modes.
 
