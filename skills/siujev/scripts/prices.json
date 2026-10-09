@@ -57,6 +57,8 @@
     "perplexity-decider": {"name": "Perplexity Decider 27B", "openrouter_id": "perplexity/pplx-decider-v1.1-27b", "in": 0.02, "cost_per_1k_agnews": 0.0038, "p50_ms": 602, "p95_ms": 1068},
     "clef":            {"name": "Cloudflare Clef", "openrouter_id": "cloudflare/clef", "in": 0.24, "cost_per_1k_agnews": 0.0115, "p50_ms": 569, "p95_ms": 1379},
     "clef-flash":      {"name": "Cloudflare Clef Flash", "openrouter_id": "cloudflare/clef-flash", "in": 0.021, "cost_per_1k_agnews": 0.0062, "p50_ms": 534, "p95_ms": 1564},
+    "solar-decide-flash": {"name": "Solar Decide Flash", "openrouter_id": "upstage/solar-decide-flash", "in": 0.05, "cost_per_1k_agnews": 0.0220, "p50_ms": 905, "p95_ms": 1646, "max_choice_options": 26},
+    "mercury-decide-paid": {"name": "Mercury Decide (paid)", "openrouter_id": "inception/mercury-decide", "in": 0.02, "cost_per_1k_agnews": 0.0036, "p50_ms": 476, "p95_ms": 915},
     "span-01":         {"name": "Span-01", "openrouter_id": "respan/span-01", "in": 0.02, "cost_per_1k_boolq": 0.0042, "p50_ms": 605, "p95_ms": 1212, "noul_only": true}
   }
 }

@@ -11,7 +11,7 @@
 - 5c. Community builds
 - 5d. This skill's own benchmark of decision models vs Jev (2026-10-01)
 - 5e. Failure-mode stress test of the same models (2026-10-02)
-- 5f. Four more decision models, including OpenAI's (2026-10-09)
+- 5f. Six more decision models, including OpenAI's (2026-10-09)
 - 6. What nobody has measured yet
 
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
@@ -565,7 +565,7 @@ others, short texts, one run per item. "Hard" here means hard for small
 decision models, not ambiguous: two frontier-class LLMs agreed with almost
 every label, and Jev, D1 and GPT-6 Luna still score 91–100 %.
 
-## 5f. Four more decision models, including OpenAI's (2026-10-09) [INDEP]
+## 5f. Six more decision models, including OpenAI's (2026-10-09) [INDEP]
 
 Between 2026-10-01 and 10-09 OpenRouter listed more decision models, among
 them OpenAI's own. Four were run through the whole harness of 5d and 5e
@@ -625,9 +625,29 @@ Accuracy, %:
   Clef 569 / 1,379 ms, Perplexity 602 / 1,068 ms; Jev 358 / 689 ms on the
   same requests.
 
-Same caveats as 5d and 5e. In addition, two more listed models
-(`upstage/solar-decide-flash`, `inception/mercury-decide`, the paid tier of
-Mercury) were not benchmarked.
+The same day two more listed models ran through the same harness:
+
+| Model | Public: AG News / BoolQ | Fresh: reviews exact / yes-no | Stress test: intents / yes-no / reviews exact / Polish all-correct | Pooled vs Jev |
+|---|---|---|---|---|
+| Mercury Decide (paid tier) | 91.0 / 90.5 | 100 / 100 | 100 / 99.2 / 97.5 / 88 | 16 / 5, p = 0.03 |
+| Solar Decide Flash | 86.5 / 82.5 | 74.0 / 89.0 | 91.7 / 81.7 / 78.8 / 51 | 93 / 0, p < 0.001 |
+
+- **The paid Mercury tier is the free preview's twin**: same accuracy on every
+  set, same weakness (Polish return-vs-complaint 19/25 and injections 12/15),
+  and a price: $0.02 per million input tokens, $0.0036 per 1,000 AG News
+  decisions (about a fifth of Jev), p50 476 / p95 915 ms. The free preview
+  stays capped at 1,000 requests a day per key. Its Polish tickets are
+  billed as 163 tokens against 544 on the free tier for the same requests,
+  so compare cost per decision, not token counts.
+- **Solar Decide Flash is far behind its sibling and Jev**: stress-test
+  Polish tickets 51 % all-correct and 6/15 Polish injections, sarcastic
+  reviews 12/20, public star scoring 56.5 %. It accepts at most 26 Choice
+  options (77-way Banking77 failed with HTTP 422 on all 432 requests that
+  used it) and is poorly calibrated on star scoring (ECE 0.30 on public
+  reviews: of the 71 % of answers above 0.8, only 65 % were right).
+  Slowest of the set: p50 905 / p95 1,646 ms.
+
+Same caveats as 5d and 5e.
 
 ## 6. What nobody has measured yet (as of 2026-10-09)
 
@@ -641,7 +661,6 @@ Mercury) were not benchmarked.
 - Decision models on long, messy, multi-field documents (5d and 5e used
   short texts only), and on arithmetic, counting or date windows.
 - OpenAI's Decisions API through its native `/v1/decisions` endpoint (5f used
-  OpenRouter's wrapper), its image input, and the paid Mercury and
-  Solar Flash tiers.
+  OpenRouter's wrapper), its image input, and the Lite tier of Span-01.
 
 If a verdict depends on one of these, it is PILOT FIRST.

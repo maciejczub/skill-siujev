@@ -127,6 +127,7 @@ OpenRouter on 2026-10-01; the Pro tier available was Gemini 3.1 Pro Preview at
 
 Jev stopped being the only model of its kind ten days after launch, and by
 2026-10-09 OpenRouter listed sixteen decision models, among them OpenAI's own.
+Twelve besides Jev were benchmarked here; two tie Jev even on the stress test.
 OpenRouter's `/api/alpha/decisions` endpoint serves several vendors' decision
 models. They take the same body (`state`, typed `questions`, `criteria`) and
 return the same answer shapes. Switching between them, or keeping one as a
@@ -151,7 +152,9 @@ Jev's over the same requests was 358 / 689 ms; older rows are from earlier runs.
 | **Cloudflare Clef** (`cloudflare/clef`, 10-01; served by PrimeIntellect) | 0.24 | not listed | none hit | behind Jev on the stress test (13 vs 0, p < 0.001; Polish all-correct 90 %); public Banking77 94.0 vs Jev 80.5 but only 95.4 on a fresh mirror (+1.4 points, the smallest gain of any model: consistent with training on Banking77) | 569 / 1,379 ms | $0.012 |
 | **Cloudflare Clef Flash** (`cloudflare/clef-flash`, 10-01) | 0.021 | not listed | none hit | like Clef, weaker: behind Jev on the stress test (26 vs 1; Polish all-correct 86 %, 11/15 injections) | 534 / 1,564 ms | $0.006 |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
+| **Mercury Decide (paid)** (`inception/mercury-decide`, 09-30; same model as the free preview, billed) | 0.02 | 32k | none hit | same as the free preview: tie on easy sets, behind Jev on the stress test (16 vs 5, p = 0.03, Polish traps) | 476 / 915 ms | $0.004 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
+| **Solar Decide Flash** (`upstage/solar-decide-flash`, 10-08) | 0.05 | not listed | **Choice ≤ 26 options** | clearly behind Jev everywhere: public BoolQ 82.5, fresh reviews 74.0, stress test 93 vs 0 discordant items (Polish all-correct 51 %, Polish injections 6/15), poorly calibrated on star scoring | 905 / 1,646 ms | $0.022 |
 | **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); on the stress test Polish without diacritics 7/15, long distractor passages 17/24; underconfident | 619 / 901 ms | $0.005 |
 | **Span-01** (`respan/span-01`, 09-26; Lite tier free) | 0.02 | – | **Noul only**; state must be a string or a conversation (`input` messages + `output`) | built to score behaviours in conversations; behind on yes/no reading (93 vs 100 fresh; 87 vs 100 on the stress test) | 605 / 1,212 ms | $0.004 (BoolQ) |
 
