@@ -59,6 +59,9 @@
     "clef-flash":      {"name": "Cloudflare Clef Flash", "openrouter_id": "cloudflare/clef-flash", "in": 0.021, "cost_per_1k_agnews": 0.0062, "p50_ms": 534, "p95_ms": 1564},
     "solar-decide-flash": {"name": "Solar Decide Flash", "openrouter_id": "upstage/solar-decide-flash", "in": 0.05, "cost_per_1k_agnews": 0.0220, "p50_ms": 905, "p95_ms": 1646, "max_choice_options": 26},
     "mercury-decide-paid": {"name": "Mercury Decide (paid)", "openrouter_id": "inception/mercury-decide", "in": 0.02, "cost_per_1k_agnews": 0.0036, "p50_ms": 476, "p95_ms": 915},
+    "microsoft-decision-1": {"name": "Microsoft Decision-1", "openrouter_id": "microsoft/microsoft-decision-1", "in": 0.042, "cost_per_1k_agnews": 0.0054, "p50_ms": 412, "p95_ms": 654},
+    "strands-decider-2b": {"name": "Strands Decider 2B", "openrouter_id": "", "in": 0.0, "self_hosted": true, "p50_ms": 941, "p95_ms": 1721, "note": "open weights (Qwen3.5-2B-Base + LoRA, Apache-2.0); latency measured on a local RTX 4070 without the optional fast kernels, not comparable with API latency"},
+    "h2o-lightning-4b": {"name": "H2O-Lightning-4B", "openrouter_id": "", "in": 0.0, "self_hosted": true, "p50_ms": 296, "p95_ms": 550, "note": "open weights (Qwen3.5-4B fine-tune, Apache-2.0), 9.3 GB; measured on a local RTX 4070 with vLLM 0.30.0, 4096-token context; not comparable with API latency"},
     "span-01":         {"name": "Span-01", "openrouter_id": "respan/span-01", "in": 0.02, "cost_per_1k_boolq": 0.0042, "p50_ms": 605, "p95_ms": 1212, "noul_only": true}
   }
 }

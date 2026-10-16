@@ -33,6 +33,10 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
   code.
 - Not trained on customer requests. Zero data retention (ZDR) is available for
   enterprise customers; a DPA and privacy policy exist (`/legal`).
+- **A newer version exists.** `typesafe/jev-1.14` was listed on OpenRouter on
+  2026-10-14 (262k context, same price). Everything this skill measured is
+  Jev 1.13; the `jev-latest` alias may already point to 1.14. Pin the model id
+  and re-check before quoting a figure.
 - No longer the only model of its kind. Between 2026-09-25 and 10-01,
   OpenRouter added six other decision models that take the same request body:
   Liquid D1, Inception Mercury Decide, Upstage Solar Decide, Together Tev1,

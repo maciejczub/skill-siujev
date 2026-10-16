@@ -52,26 +52,32 @@ file separates what vendors claim from what others measured.
 
 ## Jev is no longer the only choice
 
-Within three weeks of Jev's release, OpenRouter listed sixteen entries (models,
-aliases and tiers) that take its request format, from OpenAI, Perplexity, Cloudflare, Liquid, Inception,
-Upstage and others. This skill ran twelve of them through the same public sets,
-fresh unpublished test sets (a contamination check) and a 500-item stress test
-of negation, sarcasm, injected instructions and Polish edge cases (2026-10-01
-to 10-09). In short:
+Within three weeks of Jev's release, OpenRouter listed 27 entries (models,
+aliases and tiers) that take its request format, from OpenAI, Microsoft,
+Perplexity, Cloudflare, Liquid and others, and open-weight models you can host
+yourself appeared on Hugging Face. This skill ran fifteen of them through the
+same public sets, fresh unpublished test sets (a contamination check) and a
+500-item stress test of negation, sarcasm, injected instructions and Polish
+edge cases (2026-10-01 to 10-17). In short:
 
 - **Two matched Jev even on the stress test:** OpenAI Decisions (GPT-6 Luna)
   and Perplexity Decider 27B. Perplexity costs about a fifth of Jev per
   decision; OpenAI adds image input and EU processing.
 - **Several are cheaper** (Liquid D1 and Mercury about a third to a fifth of
   Jev's cost per decision) and tied or led on ordinary items, but fell behind
-  on the hard ones, mostly Polish. One (Clef) looks trained on a public
-  benchmark.
+  on the hard ones, mostly Polish. Some look trained on a public benchmark
+  (Clef).
+- **Self-hosting works, at a price in accuracy:** H2O-Lightning-4B runs on a
+  12 GB GPU and is the best open model measured, still behind Jev on hard
+  items. Models of 26 to 31 billion parameters did not fit and were not tested.
 - **Some are not ready**: low option limits (20 to 26 per Choice), weak on
   adversarial input, or Noul-only.
+- **Jev moves too:** Jev 1.14 was listed on 2026-10-14; the figures here are
+  for 1.13.
 
 So the answer to "should I use Jev?" now often includes "pilot it next to
 OpenAI Decisions and Perplexity". Full tables are in
-`skills/siujev/references/evidence.md` (§5d to §5f) and the comparison in
+`skills/siujev/references/evidence.md` (§5d to §5g) and the comparison in
 `references/alternatives.md` (§2c).
 
 ## Install
@@ -152,7 +158,7 @@ Jev shipped on 2026-09-15 and its prices, limits and failure-mode list change;
 its rate limits already changed once, and new decision models appear weekly.
 Every reference carries the date it was checked and the live URL to re-check.
 Prices and limits were last refreshed on 2026-10-01, the benchmarks run
-through 2026-10-09.
+through 2026-10-17.
 
 Pull requests that update numbers with a source are welcome. Change them in
 `skills/siujev/scripts/prices.json` and the matching table in

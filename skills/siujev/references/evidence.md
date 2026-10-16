@@ -12,10 +12,11 @@
 - 5d. This skill's own benchmark of decision models vs Jev (2026-10-01)
 - 5e. Failure-mode stress test of the same models (2026-10-02)
 - 5f. Six more decision models, including OpenAI's (2026-10-09)
+- 5g. Three more decision models, two self-hosted (2026-10-17)
 - 6. What nobody has measured yet
 
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
-(5d) added 2026-10-01, stress test (5e) added 2026-10-02, four more models (5f) 2026-10-09. Everything below is either
+(5d) added 2026-10-01, stress test (5e) added 2026-10-02, four more models (5f) 2026-10-09, three more (5g) 2026-10-17. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
 measured it), or **[CUSTOMER]** (a user quoted in press without a public
 method). When you use a number in a verdict, carry its label with it. Most of
@@ -649,7 +650,59 @@ The same day two more listed models ran through the same harness:
 
 Same caveats as 5d and 5e.
 
-## 6. What nobody has measured yet (as of 2026-10-09)
+## 5g. Three more decision models, two of them self-hosted (2026-10-17) [INDEP]
+
+Run through the same 2,132-request harness as 5d to 5f: Microsoft Decision-1
+(`microsoft/microsoft-decision-1` on OpenRouter) and two open-weight models
+served locally in Docker on one RTX 4070 (12 GB): Strands Decider 2B and
+H2O-Lightning-4B. The local servers speak the same `/v1/systemone` body.
+Latency of the local ones is on that GPU without network, so it is not
+comparable with the API rows.
+
+Accuracy, %:
+
+| Model | Public: AG News / Banking77 / BoolQ | Fresh: Banking77 labels / reviews exact | Stress test: intents / yes-no / reviews exact / Polish all-correct | Stress test, pooled vs Jev (only Jev right / only model right) |
+|---|---|---|---|---|
+| Jev 1.13 | 88.5 / 80.5 / 89.0 | 99.3 / 98.0 | 98.3 / 100 / 100 / 97 | reference |
+| Microsoft Decision-1 | 88.0 / 88.5 / 85.5 | 99.3 / 93.0 | 97.5 / 98.3 / 90.0 / 88 | 25 / 5, p < 0.001 |
+| H2O-Lightning-4B (bf16, two-way) | 88.0 / 91.0 / 86.0 | 98.7 / 89.0 | 97.5 / 98.3 / 87.5 / 84 | 27 / 1, p < 0.001 |
+| Strands Decider 2B | 88.0 / 86.0 / 78.5 | 92.8 / 80.0 | 91.7 / 78.3 / 65.0 / 62 | 105 / 1, p < 0.001 |
+
+- **None of the three matched Jev once the items got hard.** Even so,
+  H2O-Lightning-4B and Microsoft Decision-1 are close on English intents
+  (97.5 vs 98.3) and on Banking77-style labels (100 vs 100).
+- **Where they lose** (correct / items): sarcastic reviews, Jev 20/20 against
+  Microsoft 16/20, H2O 15/20 and Strands 3/20; Polish return-vs-complaint,
+  Jev 24/25 against Microsoft 21/25, H2O 19/25 and Strands 13/25; Polish
+  injected instructions, Jev 14/15 against Microsoft 10/15 and H2O 14/15.
+  Microsoft followed 2 of 10 English injections.
+- **The public Banking77 lead is again a mirage.** Microsoft (88.5), H2O (91.0)
+  and Strands (86.0) beat Jev's 80.5 on the public set, then gained only +10.8,
+  +7.7 and +6.8 points on a fresh mirror against Jev's +18.8. Strands' model
+  card lists Banking77 among its training datasets; for the other two the
+  cause is unknown.
+- **Calibration.** H2O is well calibrated on short items (ECE 0.03 to 0.06 on
+  intents) and gates cleanly on yes/no questions. Strands never reached 0.8
+  confidence on star scores (ECE 0.40 on fresh reviews). Microsoft kept only
+  76 % of fresh reviews above 0.8.
+- **Cost and speed.** Microsoft Decision-1 is $0.042 per million input
+  tokens: $0.0054 per 1,000 AG News decisions (counts 128 tokens against Jev's
+  423), p50 412 / p95 654 ms through OpenRouter. The self-hosted models cost
+  only GPU time: H2O answered at p50 296 / p95 550 ms on the 4070, Strands at
+  941 / 1,721 ms (the optional fast kernels were not installed).
+- **What it took to host H2O in 12 GB.** Its 9.3 GB of weights fit only with a
+  4,096-token context, two sequences and no CUDA graphs. fp8 quantization
+  was tried first and rejected: the model's own shim refuses it, because
+  its probabilities drifted 0.107 from the release probes (tolerance 0.05).
+  The bf16 setup passed that check.
+
+Not tested, and why: Quyet-1.0-Large and deck-31B (31B, Gemma-4), Surogate
+Rune 26B-A4B (26B, gated repository) do not fit a 12 GB card; Bespoke Labs'
+Nimble-v4 and Nimble-v4-max are a hosted API that needs its own key. A
+third-party leaderboard lists them (benchmarkheaven.com/jev-models); treat its
+numbers as claims. Same caveats as 5d and 5e.
+
+## 6. What nobody has measured yet (as of 2026-10-17)
 
 - Sustained-load latency.
 - Head-to-head comparisons with Llama Guard, Cleanlab, Katanemo Arch, Fastino,

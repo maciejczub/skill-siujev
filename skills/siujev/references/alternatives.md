@@ -123,11 +123,15 @@ Gemini 3.8 Pro was not listed by Google or OpenRouter on 2026-09-22, nor on
 OpenRouter on 2026-10-01; the Pro tier available was Gemini 3.1 Pro Preview at
 2.00 / 0.20 / 12.00.
 
-## 2c. Other decision models (same request body as Jev, checked 2026-10-09)
+## 2c. Other decision models (same request body as Jev, checked 2026-10-17)
 
 Jev stopped being the only model of its kind ten days after launch, and by
-2026-10-09 OpenRouter listed sixteen decision models, among them OpenAI's own.
-Twelve besides Jev were benchmarked here; two tie Jev even on the stress test.
+2026-10-16 OpenRouter listed 27 decision-model entries (models, aliases and
+tiers), among them OpenAI's own, and Hugging Face held more open-weight ones.
+Fifteen besides Jev were benchmarked here; two tie Jev even on the stress test.
+Jev itself moved on: **Jev 1.14 was listed on 2026-10-14 and every Jev figure
+in this skill is for 1.13**; pin the version (a `jev-latest` alias may already
+resolve to 1.14) and re-run your pilot before trusting a figure.
 OpenRouter's `/api/alpha/decisions` endpoint serves several vendors' decision
 models. They take the same body (`state`, typed `questions`, `criteria`) and
 return the same answer shapes. Switching between them, or keeping one as a
@@ -151,6 +155,9 @@ Jev's over the same requests was 358 / 689 ms; older rows are from earlier runs.
 | **Perplexity Decider 27B** (`perplexity/pplx-decider-v1.1-27b`, 10-07) | 0.02 | not listed | none hit | tie on every set, incl. the stress test (5 vs 5); best on Polish traps (99 % all-correct, 15/15 injections); public BoolQ 93.5 vs Jev 89 (p = 0.02); weaker gating on reviews (68 % above 0.8) | 602 / 1,068 ms | $0.004 |
 | **Cloudflare Clef** (`cloudflare/clef`, 10-01; served by PrimeIntellect) | 0.24 | not listed | none hit | behind Jev on the stress test (13 vs 0, p < 0.001; Polish all-correct 90 %); public Banking77 94.0 vs Jev 80.5 but only 95.4 on a fresh mirror (+1.4 points, the smallest gain of any model: consistent with training on Banking77) | 569 / 1,379 ms | $0.012 |
 | **Cloudflare Clef Flash** (`cloudflare/clef-flash`, 10-01) | 0.021 | not listed | none hit | like Clef, weaker: behind Jev on the stress test (26 vs 1; Polish all-correct 86 %, 11/15 injections) | 534 / 1,564 ms | $0.006 |
+| **Microsoft Decision-1** (`microsoft/microsoft-decision-1`, 10-09; also on Azure Foundry) | 0.042 | 32k | none hit | tie on ordinary items (public Banking77 88.5 but 99.3 fresh); clearly behind Jev on the stress test (25 vs 5 discordant items, p < 0.001): sarcastic reviews 16/20, Polish injections 10/15, English injections 8/10; only 68 % of stress-test reviews above 0.8 | 412 / 654 ms | $0.005 |
+| **H2O-Lightning-4B** (`h2oai/h2o-lightning-4b` v1.1, open weights, Apache-2.0; Qwen3.5-4B fine-tune; self-hosted, not on OpenRouter) | free to run; 9.3 GB of weights | 40k on a big GPU; 4k on a 12 GB card | accepts up to 255 options; needs vLLM 0.30.0 plus the vendor's shim | best open model measured here, still behind Jev on the stress test (27 vs 1, p < 0.001): sarcastic reviews 15/20, Polish return-vs-complaint 19/25; well calibrated (ECE ≤ 0.09); public Banking77 91.0 vs 98.7 on a fresh mirror | local 296 / 550 ms (RTX 4070) | GPU time |
+| **Strands Decider 2B** (`StrandsAgents/strands-decider-2B-qwen3.5-v1-2610`, Apache-2.0; LoRA on Qwen3.5-2B-Base; self-hosted) | free to run; fits 12 GB easily | not stated | serves `/v1/systemone`; star scores never clear 0.8 confidence | far behind Jev (105 vs 1 discordant items on the stress test; Polish tickets 62 % all-correct, sarcastic reviews 3/20); trained on public sets incl. Banking77, BoolQ and SST-5, so public scores flatter it | local 941 / 1,721 ms (no fast kernels) | GPU time |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
 | **Mercury Decide (paid)** (`inception/mercury-decide`, 09-30; same model as the free preview, billed) | 0.02 | 32k | none hit | same as the free preview: tie on easy sets, behind Jev on the stress test (16 vs 5, p = 0.03, Polish traps) | 476 / 915 ms | $0.004 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
@@ -184,9 +191,20 @@ What this means for a verdict:
   with more than 20 options and Solar with more than 26. Above that, only
   Jev, D1, Mercury and Kev remain, or you split the question
   hierarchically.
-- **Kev 4B is the only one with open weights**, so it is the self-hosting
-  candidate. Its benchmark results argue for a careful pilot on your own data
-  first.
+- **Self-hosting is now a real option, with a price in accuracy.** Open
+  weights measured here: H2O-Lightning-4B (best, runs in 12 GB at a 4k
+  context), Kev 4B and Strands Decider 2B. None matched Jev on the stress
+  test, and the two Qwen-based ones with public-benchmark training data
+  (Strands, H2O's Banking77) scored high on the public sets only. Models of
+  26–31B (Quyet-1.0-Large, deck-31B, Surogate Rune 26B-A4B) need a much
+  larger GPU and were **not tested**; neither was Bespoke Labs' hosted Nimble
+  (v4, v4-max), which needs its own API key (`POST
+  https://api.bespokelabs.ai/v1/systemone`). A third-party leaderboard
+  (benchmarkheaven.com/jev-models) ranks Quyet-1.0-Large first on its
+  capability score, and H2O's model card says H2O beats Jev on its composite
+  (72.5 against 71.5); this skill's tests found H2O behind Jev on hard items,
+  and the 26–31B claims are unverified here.
+  Pilot on your own data.
 - **Thresholds never carry across models.** Calibration differs: Kev is
   underconfident and Solar overconfident (on stress-test intents Solar put
   100 % of answers above 0.8 and was right on 95 %; Kev put 17 % there and
