@@ -13,10 +13,11 @@
 - 5e. Failure-mode stress test of the same models (2026-10-02)
 - 5f. Six more decision models, including OpenAI's (2026-10-09)
 - 5g. Three more decision models, two self-hosted (2026-10-17)
+- 5h. Jev 1.14 and eight more decision models (2026-10-17)
 - 6. What nobody has measured yet
 
 Compiled 2026-09-21, six days after Jev's release; decision-model benchmark
-(5d) added 2026-10-01, stress test (5e) added 2026-10-02, four more models (5f) 2026-10-09, three more (5g) 2026-10-17. Everything below is either
+(5d) added 2026-10-01, stress test (5e) added 2026-10-02, four more models (5f) 2026-10-09, three more (5g) and Jev 1.14 with eight more (5h) 2026-10-17. Everything below is either
 **[VENDOR]** (TypeSafe's own numbers), **[INDEP]** (someone outside TypeSafe
 measured it), or **[CUSTOMER]** (a user quoted in press without a public
 method). When you use a number in a verdict, carry its label with it. Most of
@@ -701,6 +702,57 @@ Rune 26B-A4B (26B, gated repository) do not fit a 12 GB card; Bespoke Labs'
 Nimble-v4 and Nimble-v4-max are a hosted API that needs its own key. A
 third-party leaderboard lists them (benchmarkheaven.com/jev-models); treat its
 numbers as claims. Same caveats as 5d and 5e.
+
+## 5h. Jev 1.14 and eight more decision models (2026-10-17) [INDEP]
+
+Run through the same 2,132-request harness as 5d to 5g, on the same day:
+Jev 1.14 and eight models listed after 2026-10-09 or not yet run. All through
+OpenRouter. Reference for the paired tests is Jev 1.13.
+
+Accuracy, %:
+
+| Model | Public: AG News / Banking77 / BoolQ | Fresh: Banking77 labels / reviews exact | Stress test: intents / yes-no / reviews exact / Polish all-correct | Stress test, pooled vs Jev 1.13 (only 1.13 right / only the model right) |
+|---|---|---|---|---|
+| Jev 1.13 | 88.5 / 80.5 / 89.0 | 99.3 / 98.0 | 98.3 / 100 / 100 / 97 | reference |
+| Jev 1.14 | 88.5 / 81.0 / 89.0 | 98.7 / 98.0 | 98.3 / 100 / 98.8 / 96 | 2 / 0, p = 0.5 |
+| Liquid D1 Ultra | 89.5 / 85.0 / 92.0 | 99.3 / 100 | 99.2 / 100 / 98.8 / 99 | 2 / 4, p = 0.69 |
+| Span-02 | 88.5 / 84.0 / 89.5 | 97.4 / 96.0 | 97.5 / 100 / 95.0 / 95 | 11 / 3, p = 0.06 |
+| Perplexity Decider 1.2 | 91.5 / 89.0 / 93.5 | 99.3 / 96.0 | 95.0 / 100 / 97.5 / 93 | 13 / 3, p = 0.02 |
+| Nace Drex 2.0 | 91.0 / 80.5 / 91.0 | 96.1 / 85.0 | 93.3 / 99.2 / 85.0 / 90 | 31 / 5, p < 0.001 |
+| Perplexity Decider Flash 1.2 | 90.0 / 87.0 / 91.0 | 100 / 81.0 | 95.8 / 100 / 73.8 / 89 | 33 / 1, p < 0.001 |
+| Cloudflare Clef Omni | 90.0 / 94.5 / 85.5 | 97.4 / 94.0 | 95.8 / 91.7 / 88.8 / 88 | 37 / 3, p < 0.001 |
+| ScaleDown Classify-1 | 88.0 / 75.0 / 79.5 | 92.8 / 89.0 | 97.5 / 92.5 / 91.2 / 85 | 37 / 3, p < 0.001 |
+| Nace Drex 1.5 | 90.0 / 83.0 / 88.0 | 96.1 / 87.0 | 90.8 / 97.5 / 88.8 / 55 | 71 / 3, p < 0.001 |
+
+- **Jev 1.14 is Jev 1.13 for practical purposes.** It differed on 2 of 500
+  stress items, none of them in its favour, at the same price and token counts.
+  The tail is tighter (p50 334 / p95 432 ms against 358 / 689 ms over the same
+  requests) and more of its star scores clear 0.8 (94 % against 90 %).
+- **Liquid D1 Ultra is the first rival of its maker that ties Jev on the
+  stress test** (the original D1 trailed, 11 vs 2). It is clean on the traps
+  that sank others: sarcastic reviews 20/20, Polish return-vs-complaint
+  25/25, Polish injections 14/15 and English 10/10. It costs $0.0055 per 1,000
+  AG News decisions (about a third of Jev) at p50 300 / p95 623 ms. It is
+  under-confident on star scores (62 % of the hard reviews above 0.8). Its
+  public Banking77 (85.0) rose to 99.3 on a fresh mirror.
+- **Perplexity regressed.** Decider 1.2 is behind Jev on the stress test where
+  the 27B v1.1 tied it (5 vs 5): telecom intents 95.0 against 99.2, English
+  injections 6/10 against 9/10, Polish injections 9/15 against 15/15.
+  Flash 1.2 trades accuracy for price: $0.0019 per 1,000 decisions, but
+  73.8 % exact on hard reviews.
+- **Span-02 learned Choice and Score** and is cheap ($0.002 per 1,000), but its
+  p95 is 1.4 s and the stress test is an unclear tie (11 vs 3, p = 0.06).
+- **Nace Drex 1.5 and 2.0, Clef Omni and ScaleDown Classify-1 are behind Jev**
+  on the stress test. Drex 1.5 mislabelled Polish churn (62 %); Clef Omni, at
+  $0.15 per million tokens, costs twice Jev per decision ($0.036 against
+  $0.018) and looks trained on Banking77 (94.5 public, 97.4 fresh);
+  ScaleDown has the slowest tail (p95 2.7 s), showed 67 % uptime on
+  OpenRouter and returned a 504 on the first request.
+- **ScaleDown's state must be a string or a text/document object**; the
+  public Polish listing set, which sends an object state, failed with HTTP
+  400 on all 144 requests.
+
+Same caveats as 5d to 5g.
 
 ## 6. What nobody has measured yet (as of 2026-10-17)
 

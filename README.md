@@ -55,14 +55,16 @@ file separates what vendors claim from what others measured.
 Within three weeks of Jev's release, OpenRouter listed 27 entries (models,
 aliases and tiers) that take its request format, from OpenAI, Microsoft,
 Perplexity, Cloudflare, Liquid and others, and open-weight models you can host
-yourself appeared on Hugging Face. This skill ran fifteen of them through the
+yourself appeared on Hugging Face. This skill ran twenty-three of them through the
 same public sets, fresh unpublished test sets (a contamination check) and a
 500-item stress test of negation, sarcasm, injected instructions and Polish
 edge cases (2026-10-01 to 10-17). In short:
 
-- **Two matched Jev even on the stress test:** OpenAI Decisions (GPT-6 Luna)
-  and Perplexity Decider 27B. Perplexity costs about a fifth of Jev per
-  decision; OpenAI adds image input and EU processing.
+- **Three matched Jev even on the stress test:** OpenAI Decisions (GPT-6 Luna),
+  Perplexity Decider 27B and Liquid D1 Ultra. Perplexity costs about a fifth
+  of Jev per decision, D1 Ultra about a third; OpenAI adds image input and EU
+  processing. Versions move and not always upward: Perplexity's newer 1.2 is
+  worse than the 27B it replaced.
 - **Several are cheaper** (Liquid D1 and Mercury about a third to a fifth of
   Jev's cost per decision) and tied or led on ordinary items, but fell behind
   on the hard ones, mostly Polish. Some look trained on a public benchmark
@@ -72,8 +74,7 @@ edge cases (2026-10-01 to 10-17). In short:
   items. Models of 26 to 31 billion parameters did not fit and were not tested.
 - **Some are not ready**: low option limits (20 to 26 per Choice), weak on
   adversarial input, or Noul-only.
-- **Jev moves too:** Jev 1.14 was listed on 2026-10-14; the figures here are
-  for 1.13.
+- **Jev moves too:** Jev 1.14 (2026-10-14) measured the same as 1.13.
 
 So the answer to "should I use Jev?" now often includes "pilot it next to
 OpenAI Decisions and Perplexity". Full tables are in

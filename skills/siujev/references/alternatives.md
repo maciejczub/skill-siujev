@@ -128,10 +128,12 @@ OpenRouter on 2026-10-01; the Pro tier available was Gemini 3.1 Pro Preview at
 Jev stopped being the only model of its kind ten days after launch, and by
 2026-10-16 OpenRouter listed 27 decision-model entries (models, aliases and
 tiers), among them OpenAI's own, and Hugging Face held more open-weight ones.
-Fifteen besides Jev were benchmarked here; two tie Jev even on the stress test.
-Jev itself moved on: **Jev 1.14 was listed on 2026-10-14 and every Jev figure
-in this skill is for 1.13**; pin the version (a `jev-latest` alias may already
-resolve to 1.14) and re-run your pilot before trusting a figure.
+Twenty-three besides Jev were benchmarked here; three tie Jev even on the stress
+test. Jev itself moved on: **Jev 1.14 was listed on 2026-10-14**. Measured the
+same way it ties 1.13 on every set (stress test: 2 vs 0 discordant items,
+p = 0.5), at the same price and with a tighter latency tail, so the Jev
+figures in this skill hold for both; still pin the version, because a
+`jev-latest` alias now resolves to the newer one.
 OpenRouter's `/api/alpha/decisions` endpoint serves several vendors' decision
 models. They take the same body (`state`, typed `questions`, `criteria`) and
 return the same answer shapes. Switching between them, or keeping one as a
@@ -159,18 +161,28 @@ Jev's over the same requests was 358 / 689 ms; older rows are from earlier runs.
 | **H2O-Lightning-4B** (`h2oai/h2o-lightning-4b` v1.1, open weights, Apache-2.0; Qwen3.5-4B fine-tune; self-hosted, not on OpenRouter) | free to run; 9.3 GB of weights | 40k on a big GPU; 4k on a 12 GB card | accepts up to 255 options; needs vLLM 0.30.0 plus the vendor's shim | best open model measured here, still behind Jev on the stress test (27 vs 1, p < 0.001): sarcastic reviews 15/20, Polish return-vs-complaint 19/25; well calibrated (ECE ≤ 0.09); public Banking77 91.0 vs 98.7 on a fresh mirror | local 296 / 550 ms (RTX 4070) | GPU time |
 | **Strands Decider 2B** (`StrandsAgents/strands-decider-2B-qwen3.5-v1-2610`, Apache-2.0; LoRA on Qwen3.5-2B-Base; self-hosted) | free to run; fits 12 GB easily | not stated | serves `/v1/systemone`; star scores never clear 0.8 confidence | far behind Jev (105 vs 1 discordant items on the stress test; Polish tickets 62 % all-correct, sarcastic reviews 3/20); trained on public sets incl. Banking77, BoolQ and SST-5, so public scores flatter it | local 941 / 1,721 ms (no fast kernels) | GPU time |
 | **Tev1 4B experimental** (`togethercomputer/tev1-4b-experimental`, 09-30; SFT of Qwen3.5-4B) | 0.042 | 32k | **Choice 2–20 options** | tie on easy sets; behind on the stress test (sarcastic reviews 9/20, injections 8/10, Polish slang 11/15) | 340 / 566 ms | $0.009 |
+| **Jev 1.14** (`typesafe/jev-1.14`, 10-14) | 0.042 | 262k on OR | Choice ≤ 255 options | equal to Jev 1.13 (public, fresh and stress sets; stress 98.3 / 100 / 98.8 / 96 vs 98.3 / 100 / 100 / 97); star-score gating a little better (94 % of hard reviews above 0.8, against 90 %) | 334 / 432 ms | $0.018 |
 | **Mercury Decide (paid)** (`inception/mercury-decide`, 09-30; same model as the free preview, billed) | 0.02 | 32k | none hit | same as the free preview: tie on easy sets, behind Jev on the stress test (16 vs 5, p = 0.03, Polish traps) | 476 / 915 ms | $0.004 |
+| **Liquid D1 Ultra** (`liquid/d1-ultra`, 10-15) | 0.042 | 32k | none hit | **ties Jev on everything, the stress test included** (2 vs 4 discordant items, p = 0.69; Polish all-correct 99 %, return-vs-complaint 25/25, sarcastic reviews 20/20, injections 10/10 and 14/15); public Banking77 85.0 vs 99.3 fresh; under-confident on star scores (62 % of hard reviews above 0.8) | 300 / 623 ms | $0.006 |
 | **Solar Decide** (`upstage/solar-decide`, 09-28; on Solar Mini 4) | 0.05 | 524k | **Choice ≤ 26 options** | behind on fresh reviews and Polish tickets; weakest on the stress test (Polish tickets 70 % all-correct, failed 7 of 15 Polish injection items); overconfident | 720 ms / **12.5 s** | $0.022 |
 | **Solar Decide Flash** (`upstage/solar-decide-flash`, 10-08) | 0.05 | not listed | **Choice ≤ 26 options** | clearly behind Jev everywhere: public BoolQ 82.5, fresh reviews 74.0, stress test 93 vs 0 discordant items (Polish all-correct 51 %, Polish injections 6/15), poorly calibrated on star scoring | 905 / 1,646 ms | $0.022 |
+| **Perplexity Decider 1.2** (`perplexity/pplx-decider-v1.2`, 10-16) | 0.02 | 262k | none hit | **worse than its predecessor (27B v1.1 above)**: behind Jev on the stress test (13 vs 3, p = 0.02); telecom intents 95.0 against 99.2; injections 6/10 in English and 9/15 in Polish, where v1.1 had 9/10 and 15/15 | 392 / 502 ms | $0.004 |
+| **Perplexity Decider Flash 1.2** (`perplexity/pplx-decider-flash-v1.2`, 10-16) | 0.01 | 262k | none hit | cheapest per decision of the set but far behind on star scores (73.8 % exact on hard reviews, 81.0 % fresh); stress test 33 vs 1 | 296 / 396 ms | $0.002 |
+| **Span-02** (`respan/span-02`, 10-16) | 0.01 | 131k | none hit; takes Choice, Score and Noul (Span-01 took Noul only) | tie on easy sets, probably a tie on the stress test (11 vs 3, p = 0.06); Polish all-correct 95 %, injections 10/10 and 12/15; public Banking77 84.0 | 292 / **1,406 ms** | $0.002 |
+| **Nace Drex 1.5** (`nace-ai/drex-v1.5`, 10-09) | 0.04 | 131k | none hit | far behind Jev (71 vs 3): Polish churn 62 %, return-vs-complaint 14/25, slang without diacritics 6/15 | 544 / 1,203 ms | $0.005 |
+| **Nace Drex 2.0** (`nace-ai/drex-v2.0`, 10-12) | 0.06 | 131k | none hit | better than 1.5, still behind Jev (31 vs 5): reviews 85 % exact, telecom intents 93.3 % | 378 / 964 ms | $0.007 |
+| **Cloudflare Clef Omni** (`cloudflare/clef-omni`, 10-09) | 0.15 | 65k | none hit | behind Jev (37 vs 3); public Banking77 94.5 but 97.4 fresh (trained on it, like Clef); dearer than Jev per decision | 323 / 549 ms | $0.036 |
+| **ScaleDown Classify-1** (`scaledown/classify-1`, 10-13) | 0.04 | 1M | **state must be a string or a text/document object** (the public Polish set, which uses an object state, failed with HTTP 400) | behind Jev (37 vs 3); public Banking77 75.0, star scores 60 % exact; OpenRouter showed 67 % uptime and the first request returned HTTP 504 | 483 / **2,708 ms** | $0.015 |
 | **Kev 4B** (`jaredpalmer/kev-4b`, 09-25; open weights, LoRA on Qwen3.5-4B-Base) | 0.042 | **8k** | none hit | public strength did not carry to fresh text (telecom 88 vs 100, Polish Nouls 86 vs 99); on the stress test Polish without diacritics 7/15, long distractor passages 17/24; underconfident | 619 / 901 ms | $0.005 |
 | **Span-01** (`respan/span-01`, 09-26; Lite tier free) | 0.02 | – | **Noul only**; state must be a string or a conversation (`input` messages + `output`) | built to score behaviours in conversations; behind on yes/no reading (93 vs 100 fresh; 87 vs 100 on the stress test) | 605 / 1,212 ms | $0.004 (BoolQ) |
 
 What this means for a verdict:
 
-- **Whenever Jev fits, price and pilot OpenAI Decisions, Perplexity and
-  Liquid D1 next to it.** OpenAI Decisions and Perplexity were the only two
-  rivals that tied Jev on the stress test as well (5 vs 3 and 5 vs 5
-  discordant items). OpenAI's costs about as much as Jev per decision on
+- **Whenever Jev fits, price and pilot OpenAI Decisions, Liquid D1 Ultra and
+  Perplexity Decider 27B (v1.1) next to it.** These three tied Jev on the
+  stress test as well (5 vs 3, 2 vs 4 and 5 vs 5 discordant items). **Versions
+  move and not always upward**: Perplexity's v1.2 is clearly worse than the
+  v1.1 it replaced, and its `latest` alias now points to v1.2. OpenAI's costs about as much as Jev per decision on
   English text and 2.8x as much on Polish, because the same Polish ticket
   counts as 876 tokens against Jev's 736 and the price per token is 2.4x;
   it adds image input, ZDR, HIPAA, and processing in the EU (Jev is

@@ -62,6 +62,15 @@
     "microsoft-decision-1": {"name": "Microsoft Decision-1", "openrouter_id": "microsoft/microsoft-decision-1", "in": 0.042, "cost_per_1k_agnews": 0.0054, "p50_ms": 412, "p95_ms": 654},
     "strands-decider-2b": {"name": "Strands Decider 2B", "openrouter_id": "", "in": 0.0, "self_hosted": true, "p50_ms": 941, "p95_ms": 1721, "note": "open weights (Qwen3.5-2B-Base + LoRA, Apache-2.0); latency measured on a local RTX 4070 without the optional fast kernels, not comparable with API latency"},
     "h2o-lightning-4b": {"name": "H2O-Lightning-4B", "openrouter_id": "", "in": 0.0, "self_hosted": true, "p50_ms": 296, "p95_ms": 550, "note": "open weights (Qwen3.5-4B fine-tune, Apache-2.0), 9.3 GB; measured on a local RTX 4070 with vLLM 0.30.0, 4096-token context; not comparable with API latency"},
+    "jev-1.14":        {"name": "Jev 1.14", "openrouter_id": "typesafe/jev-1.14", "in": 0.042, "cost_per_1k_agnews": 0.0178, "p50_ms": 334, "p95_ms": 432},
+    "liquid-d1-ultra": {"name": "Liquid D1 Ultra", "openrouter_id": "liquid/d1-ultra", "in": 0.042, "cost_per_1k_agnews": 0.0055, "p50_ms": 300, "p95_ms": 623},
+    "perplexity-decider-12": {"name": "Perplexity Decider 1.2", "openrouter_id": "perplexity/pplx-decider-v1.2", "in": 0.02, "cost_per_1k_agnews": 0.0037, "p50_ms": 392, "p95_ms": 502},
+    "perplexity-decider-flash-12": {"name": "Perplexity Decider Flash 1.2", "openrouter_id": "perplexity/pplx-decider-flash-v1.2", "in": 0.01, "cost_per_1k_agnews": 0.0019, "p50_ms": 296, "p95_ms": 396},
+    "span-02":         {"name": "Span-02", "openrouter_id": "respan/span-02", "in": 0.01, "cost_per_1k_agnews": 0.0020, "p50_ms": 292, "p95_ms": 1406},
+    "nace-drex-15":    {"name": "Nace Drex 1.5", "openrouter_id": "nace-ai/drex-v1.5", "in": 0.04, "cost_per_1k_agnews": 0.0048, "p50_ms": 544, "p95_ms": 1203},
+    "nace-drex-20":    {"name": "Nace Drex 2.0", "openrouter_id": "nace-ai/drex-v2.0", "in": 0.06, "cost_per_1k_agnews": 0.0072, "p50_ms": 378, "p95_ms": 964},
+    "clef-omni":       {"name": "Cloudflare Clef Omni", "openrouter_id": "cloudflare/clef-omni", "in": 0.15, "cost_per_1k_agnews": 0.0363, "p50_ms": 323, "p95_ms": 549},
+    "scaledown-classify-1": {"name": "ScaleDown Classify-1", "openrouter_id": "scaledown/classify-1", "in": 0.04, "cost_per_1k_agnews": 0.0151, "p50_ms": 483, "p95_ms": 2708, "state_types": "string or text/document object"},
     "span-01":         {"name": "Span-01", "openrouter_id": "respan/span-01", "in": 0.02, "cost_per_1k_boolq": 0.0042, "p50_ms": 605, "p95_ms": 1212, "noul_only": true}
   }
 }
