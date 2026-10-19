@@ -4,7 +4,8 @@ What people have actually built with Jev (TypeSafe AI's typed-decision model: st
 typed answers with probabilities, ~100-500 ms, $0.042/M input tokens, no text generation), grouped by the kind of
 software capability it enables. Sources: yibie/awesome-jev (~190 entries), walidboulanouar/awesome-jev-use-cases
 (74 demos, 148 repos), logicrw/awesome-jev-projects (287 -> 420 commit-pinned projects), ayautomate.com/jev-builds
-(1,305 builds), the r/LLMDevs "I reviewed 287 open-source Jev projects" post, TypeSafe cookbooks. Compiled 2026-09-21.
+(1,305 builds), the r/LLMDevs "I reviewed 287 open-source Jev projects" post, TypeSafe cookbooks. Compiled 2026-09-21;
+updated 2026-10-19 from the 387 entries added to yibie/awesome-jev since, new TypeSafe docs and named evaluations.
 All numbers are the builders' own claims unless tagged [measured]; nobody has replicated TypeSafe's 193.6x/444.6x.
 
 ## Contents
@@ -20,7 +21,8 @@ All numbers are the builders' own claims unless tagged [measured]; nobody has re
 - Features for classical ML
 - Games, simulations, control
 - Plain-language personalisation
-- Architectural tricks that recur
+- Images and visual decisions (prototype stage)
+- Architectural tricks that recur (incl. cascades and fallbacks between decision models)
 - Where it fell short
 - Not shipped yet
 
@@ -49,6 +51,10 @@ instructions; code thresholds, caches, orders, and treats near-equal scores as t
 Watch out: jev-orderby-bench: ORDER BY over a Jev probability passes on 20 Newsgroups but fails 4/6 conditions on
 Amazon ESCI, and 40-row batching fails a gate that one row per request passes [awesome-jev]. jevkit grep: 33 %
 recall at threshold 0.5, batch-of-8 ranks are "coarse" [measured, jevkit]. Unrelated rows in one state lower accuracy.
+- openclaw-jev-trigger: a plain-language `--when` becomes one Noul per tick; the LLM wakes only at >= 0.7. 75/76
+  synthetic ticks, 0 false wakes, 231 ms p50, ~$0.000016 per check, vs 87 % (5 false wakes) for first-try JS rules;
+  the author calls it a smoke test. jev-table-import-mapper: exact names first, then one Noul per column pair, 10/10
+  columns, 253 questions in 915 ms for $0.0012. Vibefilter (Filament): Noul per row, kept at >= 0.8.
 
 ## Judge everything, all the time
 
@@ -73,6 +79,9 @@ Watch out: AI-decision-maker measured Jev at 6.6-12.7x an LLM's token cost on CS
 per-question criteria repeat while output is one character [measured, awesome-jev]. Bryo AI reports conflict (10-20x cheaper per
 TechCrunch, 10-20x more expensive per ayautomate); do not cite [ayautomate, techcrunch].
 not made the vault faster or proven better research" [ayautomate].
+- seenpaid: 520 social captions for $0.011 at 341 ms; agreed with blind Fable labels on 94/100 (promotion) and 85/100
+  (spam). Jev for Physical AI: incident triage for a 10,000-robot fleet, 0.53 s p50, $24.57 per million decisions,
+  91.3 % agreement with template labels.
 
 ## Real-time loops
 
@@ -98,6 +107,9 @@ actions; code keeps the previous answer while a new one is in flight and applies
 Watch out: memory-relevance check was 708 vs 5,690 ms median but the fallback route cost 27 % more than the LLM
 alone [claim, ayautomate]. Routers flap between tiers on near-identical inputs; huncho ships enter/exit hysteresis
 for this [walid, awesome-jev]. Extension fetches must go through the service worker (page CSP blocks localhost).
+- Veris, voice-agent turn detection (2026-10-05) [measured]: Jev decides whether the caller has finished. Over 100
+  tasks x 3 runs the agent cut callers off on 11 % of turns instead of 52 %, but tasks passed only rose 50 -> 53 of
+  300 and the median reply slowed from 2.1 to 4.6 s; TV speech in the background is still unsolved.
 
 ## Agent and harness decisions
 
@@ -132,6 +144,12 @@ rebuilds candidates every step; catalogs > 255 options go hierarchical.
 Watch out: Theo: "a terrible compaction strategy; compaction is reconstruction, not filtering" [awesome-jev].
 jevkit build-log compactor: 58 % recall alone, 100 % only with error pinning [measured, jevkit]. browser-use executes
 nothing on a malformed answer; Jev-Auto-Router needed independent verification that routed tasks still passed.
+- SREGym (2026-10-06): no LLM agent; code collects evidence and Jev picks the faulty component, its role and the
+  supporting evidence: 80/105 (76.2 %) vs 77.8 % for a GPT-5.6 Sol agent, ~7x faster, ~200x cheaper ($0.15 in total).
+  It fails when the decisive evidence is never collected.
+- Halv (2026-09-30): Jev picks the worker model and reasoning effort; same 25/42 passes, cost -57 %, but 3.5x the
+  tokens (tools changed in the same run). decision-router: one Choice asked in both option orders plus a complexity
+  Score floor, 73 -> 93 % on 30 prompts. Kilo Code merged a System One classifier into its auto-routing (PR #7223).
 
 ## Verify every step of another AI
 
@@ -160,6 +178,14 @@ and the user's request; deterministic rules settle clear cases first; protected 
 Watch out: Abide: reviewer confirmed only 10 of 39 flagged edits and 11 of 15 flagged turns [awesome-jev]. Injection
 detection 87.0 % vs Haiku 4.5 89.0 % [measured, ayautomate]. Attacker-controlled text can steer the answer; a
 consistently wrong cheap judge scales its mistakes [langchain]. Fail-open only for reversible enhancement layers.
+- MedHallu hallucination check, pre-registered, 1,000 items [measured, github.com/stperic/jev-medhallu-benchmark]:
+  Jev 92.9 % vs 92.4-95.1 % for four fast LLMs, 204 ms p50, $0.03 per 1,000. On the 37 % of items where Jev was
+  confident (>= 0.9) all four LLMs agreed with it: same accuracy with 37 % fewer LLM calls.
+- Agentailor (2026-10-03), 193 real eval verdicts: Jev 90.6 % vs Sonnet 93.2 %, $0.07 vs $13.21 per 1,000; 0 errors on
+  the 125 confident items; escalating 13-16 % reached Sonnet's accuracy at ~1/6 of its cost (in-sample).
+- In production: Dub gates short-link creation with a malicious-link check; Cisco's skill-scanner ships a System One
+  tier that is advisory only. openclaw-jev-leakguard: 0/56 synthetic secret leaks missed (30 beyond regex), 4/57 false
+  alarms. Cribrix (RAG): answered 0 of 22 unanswerable questions vs 4/22 for naive RAG.
 
 ## Generate with an LLM, judge with Jev
 
@@ -205,6 +231,11 @@ provably a substring or catalog item.
 Watch out: over 33,047 catalog entries, 164 real queries and 9,831 graded pairs, Jev reranking alone did not beat
 vector retrieval [awesome-jev]. ORDER BY fails 4/6 gates on ESCI product relevance. Jev cannot return free text, so
 anything not offered as an option is unreachable.
+- Sayora (2026-10-12), 168 LLM-written questions over 4 small-business sites: right page first 88 % vs 70 % for the
+  production embeddings; wrong page handed to the LLM 3 % vs 33 %; "not on the site" recognised 95 % vs 23 %;
+  0.28 vs 0.16 s p50, $0.45 for the whole test. An embeddings shortlist, then Jev: 88 % in 0.25 s.
+- Zero-shot extraction by selection: JevSpan NER 73.7 vs 72.1 F1 against direct Qwen extraction; jevextract 10-26x
+  cheaper than LangExtract but F1 84.2 vs 88.5.
 
 ## Matching and deduplication
 
@@ -252,6 +283,13 @@ read the Choice confidence; below threshold escalate; humans only see the leftov
 Watch out: ayautomate benchmark: 83.8/78.8/87.0 % vs Terra 89.4/84.0/86.8, "a good small model, not a frontier
 model", confident errors on overlapping labels [measured]. ASSAY-001 on Banking77/CLINC150: split verdict.
 "Applying someone else's thresholds (0.65 varies by domain)" is a named anti-pattern [dev.to].
+- Kiln (2026-09-21), Chinese polyphone disambiguation: only the harness changed (dictionary evidence in the state, a
+  chained second call): errors 316 -> 147 of 61,750, vs 285 errors and $11 for a reasoning LLM.
+- Social-science annotation (Ibrahim & Zaki, arXiv 2609.24574): behind the best LLM on 14 of 15 tasks (median -11.6
+  macro-F1), 44x cheaper; a cascade matched the LLM at 1/4 to 1/2 of its cost; on empathy it was confident and near
+  chance.
+- Lesson from an e-commerce after-sales bot: intent confidence says which intent fits, not whether the bot can handle
+  it. Ask a separate "needs a human" Noul.
 
 ## Features for classical ML
 
@@ -274,6 +312,8 @@ propose questions, score rows, train, inspect residuals, repeat.
 Watch out: Choice and Score are overconfident, Boolean underconfident [jev-ood-calibration]; asking a yes/no item as
 Noul vs Choice moved a survey result more than the model gap [jjd-lab]. Log state, probabilities, model version and
 outcome or you cannot recalibrate later [dev.to].
+- tab-jev: Jev probabilities as TabPFN columns reach 0.745 AUC at 256 labels vs 0.682 for Jev alone. stuntd trains a
+  local head per decision site: 22 ms, 90 % of triage answered locally at 0.99 agreement, falls back upstream on drift.
 
 ## Games, simulations, control
 
@@ -298,6 +338,8 @@ pathing, arithmetic, position limits; Jev "picks only at branches".
 Watch out: no source reports trading P&L; "I wouldn't treat this as evidence that Jev has alpha" [reddit-287].
 Jev has no lookahead (jev-demos maze, poker "fish at the table"); Jev is not a calculator, so counting, dates and
 geometry stay in code [walid].
+- System-One Control Bench: Jev made the optimal single move 90 % of the time but finished only 57/100 puzzles (a
+  reasoning DeepSeek Flash: 80). Single steps are fine; long-horizon plans need a planner.
 
 ## Plain-language personalisation
 
@@ -322,6 +364,15 @@ from what the user dismisses.
   page, a Choice over the site's pages [claim, Medium "6 product ideas"].
 Watch out: adversarial text (chat spam, fake reviews, job scams) is the weakest input; selectors on LinkedIn/X change
 on every deploy; the icon-set demo has a thread on what Jev gets wrong [walid, awesome-jev].
+## Images and visual decisions (prototype stage)
+
+Since October Jev takes images behind an opt-in header (TypeSafe: "dreamer-ready", not production), and 1.14 adds
+a Box question that returns a bounding box. Among rivals, OpenAI Decisions takes images in public beta, and Liquid
+D1 Ultra, Clef Omni and Perplexity Decider also accept them; Microsoft Decision-1 is text only. TypeSafe's image
+patterns: ask about a small copy first and send a crop only when needed; tile a large image and ask a Choice over
+the tiles; put an image used by several questions in the state once, because an image in `instructions` is sent
+again for every question. "Perception to text first" is no longer the only route, but it is still the production
+route for Jev.
 
 ## Architectural tricks that recur
 
@@ -343,6 +394,19 @@ on every deploy; the icon-set demo has a thread on what Jev gets wrong [walid, a
 - Cache by content (jev() 6 ms on rerun, jgrep 0 s), add hysteresis and sticky routing to stop flapping.
 - Hierarchical Choice for catalogs over 255 options (Blender, jev-tree, beam search); anchor rubric levels to real
   outcomes and harden them against negative controls; log state, probabilities, model version and outcome.
+- Cascades between decision models: Vercel AI Gateway's decision fallbacks (docs 2026-10-08) rerun the whole request
+  on a second model when an answer's confidence is below a bound (`confidenceBelow`, `probabilityBetween`, any/all/
+  atLeast), and also on a missing confidence or a refusal; both stages are billed and their latencies add.
+- Vendor fallback with the identical body (pydecide, jev-switch): cheap to wire, but tune thresholds per model and
+  check conformance; jevcompat found 2 of the 8 most-starred open ports matched the wire format.
+- Billing shape differs by vendor: Jev carries ~261 fixed tokens per request, so 8 questions in one request saved
+  76-86 % of input tokens (jev-fanout-bench); Liquid bills each question of a D1 Ultra request as its own prompt,
+  which removes that saving.
+- Combining models, measured offline (JevBench combination study, 534 decisions): a committee of three decision
+  models improved calibration but cost 3x and waited for the slowest member; averaging probabilities beat majority
+  voting; averaging two repeated samples of one model was worse than one call.
+- Option order: TypeSafe now lists a lean toward the first Choice option (jaggedness page, 2026-10-02); ask
+  important questions in both orders. Pin versions and alert when an alias moves (Tiltmeter).
 
 ## Where it fell short
 
@@ -361,6 +425,11 @@ on every deploy; the icon-set demo has a thread on what Jev gets wrong [walid, a
   email classification, while TechCrunch quotes the same company as 10-20x cheaper; conflicting, do not cite.
 - Calibration is not uniform: Choice/Score overconfident, Boolean underconfident; ASSAY-001 split verdict; a yes/no
   asked as Noul vs Choice shifts results more than switching models [jjd-lab].
+- New since 2026-09-21: Control Bench 57/100 finished puzzles; Veris replies twice as slow; SREGym picked the wrong
+  clue on all 5 runs of one fault; annotation -11.6 F1 against the best LLM; a dice test returned face 1 in 400/400
+  picks at a stated 82.9 %, and a stated 30 % risk came back as 5.3 % via Choice and 26.7 % via Noul.
+- Community results need checking: jev-verify found hand-written fixtures posing as API output in 121 published
+  outputs, so prefer results that show raw responses.
 
 ## Not shipped yet
 

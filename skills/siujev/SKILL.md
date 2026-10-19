@@ -144,7 +144,8 @@ Work through `references/fit-checklist.md` in order:
 
 1. **Hard blockers.** Generation (including "be the model behind an agent"),
    non-enumerable answers with no candidate generator, arithmetic or date
-   logic at the core, multi-hop reasoning, non-text input, state over 32k
+   logic at the core, multi-hop reasoning, non-text input in production
+   (Jev's image input is an opt-in prototype feature), state over 32k
    tokens that cannot be filtered, on-prem requirement, or an existing trained
    classifier that already meets the bar. Any one of these is a NO for the
    decision as stated. Often the decision can be restated so a *part* of it
@@ -164,8 +165,10 @@ Work through `references/fit-checklist.md` in order:
    verdict what the vendor states (English is the primary training language;
    other languages are accepted with lower accuracy) and whether any
    measurement exists for that language. `references/evidence.md` §5b and §5d
-   hold the only Polish measurements known (two small synthetic sets, checked
-   2026-10-01); for other Slavic languages there are none.
+   hold this skill's Polish classification measurements (synthetic sets,
+   2026-09-21 to 10-19). JevBench's language view has 23 languages, but its
+   cells score reasoning items, not classification. For other Slavic
+   languages no classification measurement is known.
 
 Cross-check the sketch against the failure-mode table in
 `references/jev-facts.md`. The common traps: asking Jev to count or compare
@@ -202,10 +205,12 @@ questions:
   §2b). When the incumbent is a frontier model or the bar is frontier
   accuracy, price the cascade arm too: Jev behind a high confidence gate, with
   the frontier model handling the rest.
-- **Direct rivals.** Other decision models take Jev's exact request body
-  (`references/alternatives.md` §2c, measurements in
-  `references/evidence.md` §5d). Name the best of them in the verdict and
-  pilot it as a second arm.
+- **Direct rivals.** Other decision models take Jev's exact request body.
+  Contract limits and prices are in `references/alternatives.md` §2c. For
+  rankings across many systems, use JevBench; for robustness on in-scope
+  classification and traps, use this skill's benchmark. How to read both is
+  in `references/evidence.md` §5d. Name the best-fitting rival in the
+  verdict and pilot it as a second arm on the same spec.
 - **No model at all, or your own.** Always also compare against plain code,
   and against a classifier fine-tuned on labels the team already has. A
   manual review queue is a label source.
@@ -282,9 +287,10 @@ reports agreement with labels, the share of answers in the uncertain band,
 repeat flips, p95 latency, and token usage. `assets/pilot-spec-example.json`
 is a complete spec to copy (Polish marketplace listings, three Nouls and a
 Choice with an `allowed` option, expected labels). If the user has no
-TypeSafe key, `--openrouter` runs the same pilot through OpenRouter, and the
-spec's `"model"` can then name a rival decision model (e.g. `liquid/d1`) for
-the second arm.
+TypeSafe key, `--openrouter` runs the same pilot through OpenRouter.
+`--model` names a rival decision model for the second arm (e.g.
+`--openrouter --model liquid/d1-ultra`). `--url` points the same spec at a
+self-hosted model that serves `/v1/systemone`.
 
 `probe.py` calls a live API. It needs network access and `TYPESAFE_API_KEY`
 or `OPENROUTER_API_KEY`, so it cannot run in a sandbox without network, such

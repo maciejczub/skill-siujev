@@ -6,7 +6,10 @@ OPENROUTER_API_KEY with --openrouter (OpenRouter serves Jev on its own
 POST /api/alpha/decisions endpoint with the same request and response shape;
 model id "typesafe/jev-1.13"; no waitlist). The same OpenRouter endpoint serves
 other decision models with the same request body (e.g. "liquid/d1",
-"inception/mercury-decide:free"); set "model" in the spec to pilot one of them.
+"inception/mercury-decide:free"); set "model" in the spec, or pass --model, to
+pilot one of them. --url sends the same body to any other server that speaks
+POST /v1/systemone, such as a self-hosted open-weight decision model; no key is
+needed there.
 Reads a JSON spec that holds the questions and a list of sample states, sends
 each state (optionally several times), and reports:
 
@@ -32,6 +35,8 @@ Usage:
   python3 probe.py spec.json --repeats 3    # stability check
   python3 probe.py spec.json --json out.json
   OPENROUTER_API_KEY=... python3 probe.py spec.json --openrouter
+  OPENROUTER_API_KEY=... python3 probe.py spec.json --openrouter --model liquid/d1-ultra   # second arm, same spec
+  python3 probe.py spec.json --url http://127.0.0.1:8000/v1/systemone --model local         # self-hosted model
 
 Every run validates the spec first and stops before the first call if it finds
 an error: unknown question type, too many or too few options or levels, an
@@ -177,7 +182,7 @@ def call(api_key: str, model: str, state, questions: dict, timeout: float, url: 
     body = json.dumps({"state": state, "model": model, "questions": questions}).encode()
     req = urllib.request.Request(
         url, data=body, method="POST",
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **({"Authorization": f"Bearer {api_key}"} if api_key else {})},
     )
     t0 = time.perf_counter()
     for attempt in range(4):
@@ -212,6 +217,8 @@ def main(argv=None) -> int:
     p.add_argument("--noul-threshold", type=float, default=0.5)
     p.add_argument("--openrouter", action="store_true", help="call Jev through OpenRouter (OPENROUTER_API_KEY) instead of TypeSafe directly")
     p.add_argument("--validate", action="store_true", help="check the spec offline and print the projected cost; make no API calls")
+    p.add_argument("--model", help="model id, overriding the spec's \"model\" (run the same spec once per arm)")
+    p.add_argument("--url", help="any other POST /v1/systemone endpoint, e.g. a self-hosted decision model (no key sent unless DECISION_API_KEY is set)")
     a = p.parse_args(argv)
 
     try:
@@ -219,7 +226,7 @@ def main(argv=None) -> int:
     except (OSError, ValueError) as e:
         print(f"cannot read spec {a.spec}: {e}", file=sys.stderr)
         return 2
-    model = spec.get("model", "typesafe/jev-1.13" if a.openrouter else "jev-latest")
+    model = a.model or spec.get("model", "typesafe/jev-1.13" if a.openrouter else "jev-latest")
     errors, warnings, summary = validate(spec, model, a.openrouter, a.repeats)
     for line in summary:
         print(line, file=sys.stderr)
@@ -234,7 +241,10 @@ def main(argv=None) -> int:
         print("spec OK" + (f" ({len(warnings)} warning(s))" if warnings else ""))
         return 0
 
-    if a.openrouter:
+    if a.url:
+        api_key = os.environ.get("DECISION_API_KEY", "")
+        url = a.url
+    elif a.openrouter:
         api_key = os.environ.get("OPENROUTER_API_KEY")
         url = OPENROUTER_URL
         if not api_key:

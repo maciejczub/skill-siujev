@@ -1,10 +1,10 @@
-# Jev fact sheet (jev-1.13, verified 2026-09-21; limits and access re-checked 2026-10-01)
+# Jev fact sheet (jev-1.13, verified 2026-09-21; limits and access re-checked 2026-10-01; models, aliases, images and failure modes re-checked 2026-10-19)
 
 ## Contents
 - What it is (and the rival decision models)
 - The three primitives: Choice, Score, Noul
 - Limits, price, throughput, access
-- Known failure modes (nine, from TypeSafe's jaggedness page)
+- Known failure modes (nine, from TypeSafe's jaggedness page) and structural caveats
 - Design doctrine TypeSafe expects you to follow
 - Where TypeSafe says it fits
 - Jev and coding agents; Jev Router
@@ -18,8 +18,10 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 ## What it is
 
 - Jev is a **System One model** from TypeSafe AI (San Francisco, founded 2024;
-  released in limited early access 2026-09-15). Model id `jev-1.13.0`, aliases
-  `jev-latest` and `jev-preview` (both currently resolve to 1.13.0).
+  released in limited early access 2026-09-15). Model ids `jev-1.13.0` and
+  `jev-1.14.0` (since 2026-10-14). Aliases on 2026-10-19: `jev-latest`, the
+  stable release and the SDKs' default, points to 1.13.0; `jev-preview`, the
+  newest release, points to 1.14.0.
 - It is a **general classifier, not a language model**. You send a `state`
   (string, JSON object, or array of text) plus a map of typed questions, and get
   back typed answers with probabilities. It never generates text, code, or
@@ -34,10 +36,10 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 - Not trained on customer requests. Zero data retention (ZDR) is available for
   enterprise customers; a DPA and privacy policy exist (`/legal`).
 - **A newer version exists.** `typesafe/jev-1.14` was listed on OpenRouter on
-  2026-10-14 (262k context, same price). Measured on 2026-10-17 it ties Jev
-  1.13 on every set of this skill's benchmark. The
-  `jev-latest` alias resolves to the newest release, so pin the model id when
-  thresholds are tuned.
+  2026-10-14 (262k context there, same price). Measured on 2026-10-17 it ties
+  Jev 1.13 on every set of this skill's benchmark. It adds the Box question
+  type for images. Aliases move when a release ships (`jev-preview` already
+  points to 1.14), so pin the model id when thresholds are tuned.
 - No longer the only model of its kind. Between 2026-09-25 and 10-01,
   OpenRouter added six other decision models that take the same request body:
   Liquid D1, Inception Mercury Decide, Upstage Solar Decide, Together Tev1,
@@ -75,8 +77,8 @@ appended, e.g. `https://docs.typesafe.ai/models.md`).
 |---|---|
 | Price | **$0.042 per million input tokens** ($42 per billion). Output tokens are free. Unchanged since launch |
 | Rate limits | 100,000 tokens/s and 40 requests/s (2,400/min) per account; "adjusting dynamically" and may change without notice; higher on custom/enterprise plans. Changed after launch: on 2026-09-21 the page said 250,000 tokens/s and 1,200 requests/min, so the token ceiling fell 2.5x and the request ceiling doubled |
-| Context | 64k tokens per request (state + all questions); 32k for state + the single longest question |
-| Input | Text only. No images, audio, video, or binaries: pre-process to text in code |
+| Context | 64k tokens per request (state + all questions); 32k for state + the single longest question. Both 1.13 and 1.14 accept a `TypeSafe-Danger-Zone-Long-Context: true` header that raises both limits to 262k, at the same price per token. TypeSafe says long context is slower and less accurate, so use it only where needed |
+| Input | Text by default. Images are opt-in per request with the `TypeSafe-Danger-Zone-Images: true` header: in the state, in instructions, or as criteria, for every question type. 1.14 adds the Box question type (a bounding box). TypeSafe calls images and Box "dreamer-ready", not ready for production, and says format, limits and accuracy can change. Limits: 280–1,568 px per side, 16 MiB per image, 32 MiB per request. No audio, video or binaries. For production, pre-process to text in code |
 | Languages | English is the primary training language; others (incl. CJK) are "handled but not equally well"; test before relying on it |
 | Endpoint | `POST https://api.typesafe.ai/v1/systemone`; `GET /v1/models` |
 | SDKs | Python `typesafe_sdk` (Python >= 3.10), JavaScript `@typesafe-ai/sdk`; env var `TYPESAFE_API_KEY` |
@@ -98,7 +100,7 @@ Speed and cost claims versus frontier LLMs are **self-tested by TypeSafe**:
 its own model-capabilities team, which TypeSafe says likely sit at the high end of
 real-world results. Use them as an upper bound, not a plan.
 
-## Known failure modes (`/model-jaggedness/jev-1.13`, reviewed 2026-09-17)
+## Known failure modes (`/model-jaggedness/jev-1.13`, last reviewed by TypeSafe 2026-10-02)
 
 | # | Failure mode | What to do instead |
 |---|---|---|
@@ -109,7 +111,8 @@ real-world results. Use them as an upper bound, not a plan.
 | 5 | **Large state with irrelevant detail**: accuracy falls with distractors (context rot) | Filter/retrieve in code first; or a Noul relevance pass |
 | 6 | **Adversarial content**: injected instructions or self-arguing text can move answers; state is not treated as hostile | Precise criteria; test edge cases; do not make Jev the only defence |
 | 7 | **Contradictory instructions vs criteria**; inverted Nouls (true means no) | Align wording; keep true = yes |
-| 8 | **No structural invariants** between question types or between a question and its negation | Word each question for what you want; never carry thresholds across types |
+| 8 | **Choice option order**: in some cases the answer leans toward the option listed first (added on 2026-10-02) | Reorder the options and check that the answer stays the same; for important decisions ask in both orders |
+| – | **No structural invariants** between question types or between a question and its negation (on the page until 2026-10-02, still stated under the primitives) | Word each question for what you want; never carry thresholds across types |
 | 9 | **Generation**: cannot produce text; chaining Choices to "generate" is slow and poor | Generate candidates with regex/parser/LLM; let Jev select |
 
 TypeSafe's own summary of what to avoid: asking what code can compute exactly;

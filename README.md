@@ -43,8 +43,8 @@ which covers *how* to build once you have decided.
    NO) with a question sketch, thresholds, guards, the best alternative and a
    next step. A pilot script checks your spec offline, then runs your own
    samples through the live API and reports agreement, uncertainty, repeat
-   stability and latency. Changing one field pilots a rival model with the
-   same spec. A report checker catches wrong verdict counts, unsourced costs
+   stability and latency. One flag pilots a rival model, hosted or
+   self-hosted, with the same spec. A report checker catches wrong verdict counts, unsourced costs
    and runaway length before you hand it over.
 
 Every number carries its source and the date it was checked, and the evidence
@@ -53,33 +53,42 @@ file separates what vendors claim from what others measured.
 ## Jev is no longer the only choice
 
 Within three weeks of Jev's release, OpenRouter listed 27 entries (models,
-aliases and tiers) that take its request format, from OpenAI, Microsoft,
-Perplexity, Cloudflare, Liquid and others, and open-weight models you can host
-yourself appeared on Hugging Face. This skill ran twenty-three of them through the
-same public sets, fresh unpublished test sets (a contamination check) and a
-500-item stress test of negation, sarcasm, injected instructions and Polish
-edge cases (2026-10-01 to 10-17). In short:
+aliases and tiers) that take its request format. They come from OpenAI,
+Microsoft, Perplexity, Cloudflare, Liquid and others, and open-weight models
+you can host yourself appeared on Hugging Face. The field now grows faster
+than any one project can test it.
 
-- **Three matched Jev even on the stress test:** OpenAI Decisions (GPT-6 Luna),
-  Perplexity Decider 27B and Liquid D1 Ultra. Perplexity costs about a fifth
-  of Jev per decision, D1 Ultra about a third; OpenAI adds image input and EU
-  processing. Versions move and not always upward: Perplexity's newer 1.2 is
-  worse than the 27B it replaced.
-- **Several are cheaper** (Liquid D1 and Mercury about a third to a fifth of
-  Jev's cost per decision) and tied or led on ordinary items, but fell behind
-  on the hard ones, mostly Polish. Some look trained on a public benchmark
-  (Clef).
-- **Self-hosting works, at a price in accuracy:** H2O-Lightning-4B runs on a
-  12 GB GPU and is the best open model measured, still behind Jev on hard
-  items. Models of 26 to 31 billion parameters did not fit and were not tested.
-- **Some are not ready**: low option limits (20 to 26 per Choice), weak on
-  adversarial input, or Noul-only.
-- **Jev moves too:** Jev 1.14 (2026-10-14) measured the same as 1.13.
+- **For rankings, use [JevBench](https://benchmarkheaven.com/jev-models).** It
+  is an independent leaderboard with 258 systems on 2026-10-18, sealed test
+  items, calibration, speed and cost axes and a 23-language view. Its
+  headline axis rewards reasoning, which is a different job from the
+  classification decision models are mostly bought for. The skill explains
+  how to read it.
+- **This skill's own benchmark is frozen**
+  ([full record](docs/decision-model-benchmark.md)). From 2026-10-01 to 10-19
+  it ran 26 decision models through public sets, fresh unpublished sets (a
+  contamination check) and a 500-item stress test: sarcasm, injected
+  instructions, Polish edge cases. It measured in-scope classification,
+  where JevBench measures reasoning. What it found:
+  - **Four matched Jev even on the stress test:** Jev 1.14, OpenAI Decisions,
+    Perplexity Decider 27B and Liquid D1 Ultra. Perplexity costs about a fifth
+    of Jev per decision and D1 Ultra about a third. OpenAI adds image input
+    and EU processing.
+  - **Versions move, not always upward:** Perplexity's newer 1.2 is worse than
+    the 27B it replaced.
+  - **Leads on public benchmarks did not hold.** Leads on public Banking77
+    shrank on fresh text with the same labels, which fits training on the
+    public set.
+  - **Self-hosting works on a 12 GB GPU at a price in accuracy.**
+    H2O-Lightning-4B and the Polish-trained basal-2.0 4.5B were the best
+    open models measured, both behind Jev on hard items. basal did not beat
+    Jev even on Polish tickets.
 
 So the answer to "should I use Jev?" now often includes "pilot it next to
-OpenAI Decisions and Perplexity". Full tables are in
-`skills/siujev/references/evidence.md` (§5d to §5g) and the comparison in
-`references/alternatives.md` (§2c).
+one of its rivals". The skill does that with one flag (`probe.py --model` or
+`--url`). From here on the project spends its effort on what leaderboards do
+not cover: when a decision model is the right tool at all, and how teams put
+one to work.
 
 ## Install
 
@@ -132,6 +141,7 @@ skills/siujev/
 ├── scripts/           prices.json (single dated source of prices and limits),
 │                      estimate_cost.py, probe.py (pilot, --validate), check_report.py
 └── assets/            verdict template, ready-to-run pilot spec (48 Polish listings)
+docs/                  the frozen decision-model benchmark (not loaded by the skill)
 evals/                 six evals, fixtures and RESULTS.md
 tools/check_skill.py   repository checks, also run in CI
 ```
@@ -158,8 +168,11 @@ and reports; Haiku is fine for quick questions. Details and caveats are in
 Jev shipped on 2026-09-15 and its prices, limits and failure-mode list change;
 its rate limits already changed once, and new decision models appear weekly.
 Every reference carries the date it was checked and the live URL to re-check.
-Prices and limits were last refreshed on 2026-10-01, the benchmarks run
-through 2026-10-17.
+Prices and limits were last refreshed on 2026-10-01; models, aliases, image
+input and failure modes on 2026-10-19, when the use-case catalog also gained
+what was built and measured since its first compilation. The project's own
+benchmark ran through 2026-10-19; for newer models the skill points to
+JevBench.
 
 Pull requests that update numbers with a source are welcome. Change them in
 `skills/siujev/scripts/prices.json` and the matching table in
